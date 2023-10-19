@@ -499,11 +499,11 @@ def build_cspice():
 
         return
 
-    if struct.calcsize("P") * 8 == 32:
+    if struct.calcsize("P") * 8 == 32:  # 32-bit platform
         spice_path = cspice_path + '/cspice32'
         TKCOMPILEARCH = '-m32'
         os.system('export TKCOMPILEARCH="' + TKCOMPILEARCH + '"')
-    else:
+    else:  # assume 64-bit platform if not 32-bit
         spice_path = cspice_path + '/cspice64'
         TKCOMPILEARCH = '-m64'
         os.system('export TKCOMPILEARCH="' + TKCOMPILEARCH + '"')
@@ -579,8 +579,8 @@ def build_swig():
         print('Configuring SWIG ' + swig_version + ' tool. This could take a while...')
         os.system('../configure --prefix="' + swig_install_path + '" > "' + logs_path + '/swig_configure.log" 2>&1')
 
-        makeFlag = os.system('make -j' + nCores + ' > "' + logs_path + '/swig_build.log" 2>&1')
-        if makeFlag == 0:
+        make_flag = os.system('make -j' + nCores + ' > "' + logs_path + '/swig_build.log" 2>&1')
+        if make_flag == 0:
             os.system('make install > "' + logs_path + '/swig_install.log" 2>&1')
             os.chdir('..')
             os.system('rm -Rf ' + swig_build_path)
