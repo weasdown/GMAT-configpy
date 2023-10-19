@@ -59,9 +59,9 @@ if nCores == 'None':
 def setup_windows():
     # 64-bit; change to x86 for 32-bit
     vs_arch = 'x86_amd64'
-    vs_tools = 'vs' + vc_major_version + '0comntools'
+    vs_tools = f'vs{vc_major_version}0comntools'
     if vs_version >= 2017:
-        vs_path_base = os.getenv("ProgramFiles") + '\\Microsoft Visual Studio\\' + str(vs_version)
+        vs_path_base: str = os.getenv("ProgramFiles") + '\\Microsoft Visual Studio\\' + str(vs_version)
 
         # Check which edition of Visual Studio is installed
         if os.path.exists(vs_path_base + '\\Enterprise'):
@@ -75,10 +75,15 @@ def setup_windows():
         else:
             sys.exit("Could not find suitable Visual Studio development environment.")
 
-        syscall = vs_path + '\\..\\..\\VC\\Auxiliary\\Build\\vcvarsall.bat'  # my code - removed \\..\\.. from start of line
-    if vs_version <= 2015:
-        vs_path = vs_path = os.getenv(vs_tools)
+        syscall: str = vs_path + '\\..\\..\\VC\\Auxiliary\\Build\\vcvarsall.bat'
+
+    elif vs_version <= 2015:
+        vs_path = os.getenv(vs_tools)
         syscall = vs_path + '\\..\\..\\VC\\vcvarsall.bat'
+
+    else:
+        raise Exception(f'Visual Studio version not recognised - {vs_version}.')
+
     print('\"' + syscall + '\"' + " " + vs_arch + ' & set > vsEnvironment.txt')
     os.system('\"' + syscall + '\"' + " " + vs_arch + ' & set > vsEnvironment.txt')
     print('\"' + syscall + '\"' + " " + vs_arch + ' & set > vsEnvironment.txt')
@@ -99,7 +104,7 @@ def setup_windows():
     # Add Cmake to path
     sys.path.append('C:/Program Files/CMake/bin')
 
-    print("\nWindows setup complete")
+    print("\nWindows setup complete\n")
 
 
 def download_depends():
@@ -120,10 +125,11 @@ def download_depends():
         xerces_version_folder = f'xerces-c-{xerces_version}'
         xerces_folder_simple = os.path.basename(os.path.normpath(xerces_path))
         os.rename(xerces_version_folder, xerces_folder_simple)
+    else:
+        print('Xerces already downloaded')
 
-    # Create directories and download wxWidgets if needed
-    global wx_build
-    if not os.path.exists(wxWidgets_path + '/wxWidgets-' + wx_version) and wx_build:
+    # Download wxWidgets if it doesn't already exist
+    if not os.path.exists(wxWidgets_path + '/wxWidgets-' + wx_version):
         # Create & change directories
         if not os.path.exists(wxWidgets_path):
             os.mkdir(wxWidgets_path)
@@ -143,6 +149,7 @@ def download_depends():
             print('Error in wxWidgets-' + wx_version + ' download.')
             wx_build = False
 
+    # Download CSPICE if it doesn't already exist
     if not os.path.exists(cspice_path):
         # Create & change directories
         os.makedirs(depends_path + '/cspice', exist_ok=True)
@@ -154,7 +161,7 @@ def download_depends():
         else:
             cspice_type = 'PC_Linux_GCC'
 
-        # Determine 32 or 64 bit system
+        # Determine 32 or 64-bit system
         if struct.calcsize("P") * 8 == 32:
             cspice_dir = 'cspice32'
             cspice_bit = '32bit'
@@ -168,10 +175,10 @@ def download_depends():
             os.system(
                 'curl -L http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_' + cspice_version + '/C/PC_Windows_VisualC_' + cspice_bit + '/packages/cspice.zip > cspice.zip')
             os.system(f'"{depends_path}/bin/7za/7za.exe" x cspice.zip > nul')
-            os.chdir(cspice_path)  # my code
+            os.chdir(depends_path)  # switch back to the depends folder from /depends/cspice/windows
             os.rename('cspice', cspice_dir)
-            os.remove('cspice.zip')
-        else:
+
+        else:  # Platform is not Windows
             # Download and extract Spice for Mac/Linux (32/64-bit)
             os.system(
                 'curl https://naif.jpl.nasa.gov/pub/naif/misc/toolkit_"' + cspice_version + '"/C/"' + cspice_type + '"_' + cspice_bit + '/packages/cspice.tar.Z > cspice.tar.Z')
@@ -179,14 +186,17 @@ def download_depends():
             os.system('tar -xf cspice.tar')
             os.system('mv cspice ' + cspice_dir)
             os.remove('cspice.tar')
+    else:
+        print('CSPICE already downloaded')
 
+    # Download SWIG if it doesn't already exist, checking platform-appropriate path
     if sys.platform == 'win32':
         swig_dir = swig_path + '/swigwin'
     else:
         swig_dir = swig_path + '/swig'
-
     if not os.path.exists(swig_dir):
         # Create & change directories
+        os.chdir(depends_path)
         os.makedirs(depends_path + '/swig', exist_ok=True)
         os.makedirs(swig_path, exist_ok=True)
         os.chdir(swig_path)
@@ -213,6 +223,7 @@ def download_depends():
             os.system(
                 'curl -L https://sourceforge.net/projects/pcre/files/pcre/' + pcre_version + '/' + pcre_filename + '/download' + ' > ' + pcre_filename)
 
+    # Download Java if it doesn't already exist
     if not os.path.exists(java_path):
         # Create & change directories
         os.makedirs(java_path, exist_ok=True)
@@ -252,8 +263,8 @@ def download_depends():
 
 def build_xerces():
     if not os.path.exists(xerces_path):
-        raise FileNotFoundError(f'Xerces build cannot begin because the xerces folder was not found.\
-						   \nCurrent working directory: {os.getcwd()}')
+        raise FileNotFoundError(f'Xerces build cannot begin because the xerces folder was not found.'
+                                f'\nCurrent working directory: {os.getcwd()}')
 
     print('\n********** Configuring Xerces-C++ ' + xerces_version + ' **********')
 
@@ -270,8 +281,8 @@ def build_xerces():
             os.system(
                 f'cmake -G "Visual Studio {vs_major_version} {str(vs_version)}" -DBUILD_SHARED_LIBS:BOOL=OFF -Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="{xerces_outdir}" "{xerces_path}" > "{logs_path}\\xerces_cmake.log" 2>&1')
 
-            # print('-- Compiling debug Xerces. This could take a while...')
-            # os.system(f'cmake --build . --config Debug --target install > "{logs_path}\\xerces_build_debug.log" 2>&1')
+            print('-- Compiling debug Xerces. This could take a while...')
+            os.system(f'cmake --build . --config Debug --target install > "{logs_path}\\xerces_build_debug.log" 2>&1')
 
             print('-- Compiling release Xerces. This could take a while...')
             os.system(
@@ -306,33 +317,35 @@ def build_xerces():
 
         if sys.platform == 'darwin':
             # Xerces needs these flags on OSX
-            OSXFLAGS = '-mmacosx-version-min=' + osx_min_version + ' --sysroot=' + osx_sdk
+            osxflags = f'-mmacosx-version-min={osx_min_version} --sysroot={osx_sdk}'
         else:
-            OSXFLAGS = ''
+            osxflags = ''
 
-        COMMONXERCESFLAGS = '--disable-shared --disable-netaccessor-curl --disable-transcoder-icu --disable-msgloader-icu'
+        common_xerces_flags = ('--disable-shared --disable-netaccessor-curl'
+                               ' --disable-transcoder-icu --disable-msgloader-icu')
 
         print('Configuring Xerces ' + xerces_version + ' debug library. This could take a while...')
-        COMMONCFLAGS = '-O0 -g -fPIC ' + OSXFLAGS
+        common_c_flags = '-O0 -g -fPIC ' + osxflags
         os.system(
-            '../configure ' + COMMONXERCESFLAGS + ' CFLAGS="' + COMMONCFLAGS + '" CXXFLAGS="' + COMMONCFLAGS + '" --prefix="' + xerces_install_path + '" > "' + logs_path + '/xerces_configure_debug.log" 2>&1')
+            f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" CXXFLAGS="{common_c_flags}"'
+            f' --prefix="{xerces_install_path}" > "{logs_path}/xerces_configure_debug.log" 2>&1')
 
-        makeFlag = os.system('make -j' + nCores + ' > "' + logs_path + '/xerces_build_debug.log" 2>&1')
-        if makeFlag == 0:
+        make_flag = os.system('make -j' + nCores + ' > "' + logs_path + '/xerces_build_debug.log" 2>&1')
+        if make_flag == 0:
             os.system('make install > "' + logs_path + '/xerces_install_debug.log" 2>&1')
-            os.rename(xerces_install_path + '/lib/libxerces-c.a', xerces_install_path + '/lib/libxerces-cd.a')
+            os.rename(f'{xerces_install_path}/lib/libxerces-c.a', f'{xerces_install_path}/lib/libxerces-cd.a')
             os.system('make clean > /dev/null 2>&1')
         else:
             print('Xerces debug build failed. Fix errors and try again.')
             return
 
         print('Configuring Xerces ' + xerces_version + ' release library. This could take a while...')
-        COMMONCFLAGS = '-O2 -fPIC ' + OSXFLAGS
+        common_c_flags = '-O2 -fPIC ' + osxflags
         os.system(
-            '../configure ' + COMMONXERCESFLAGS + ' CFLAGS="' + COMMONCFLAGS + '" CXXFLAGS="' + COMMONCFLAGS + '" --prefix="' + xerces_install_path + '" > "' + logs_path + '/xerces_configure_release.log" 2>&1')
+            '../configure ' + common_xerces_flags + ' CFLAGS="' + common_c_flags + '" CXXFLAGS="' + common_c_flags + '" --prefix="' + xerces_install_path + '" > "' + logs_path + '/xerces_configure_release.log" 2>&1')
 
-        makeFlag = os.system('make -j' + nCores + ' > "' + logs_path + '/xerces_build_release.log" 2>&1')
-        if makeFlag == 0:
+        make_flag = os.system('make -j' + nCores + ' > "' + logs_path + '/xerces_build_release.log" 2>&1')
+        if make_flag == 0:
             os.system('make install > "' + logs_path + '/xerces_install_release.log" 2>&1')
             os.chdir('..')
             os.system('rm -Rf ' + xerces_build_path)
@@ -346,11 +359,11 @@ def build_wxWidgets():
 
     # Windows-specific build
     if sys.platform == 'win32':
-        # Determine 32 or 64 bit system
-        if struct.calcsize("P") * 8 == 32:
+        # Determine 32 or 64-bit system
+        if struct.calcsize("P") * 8 == 32:  # 32-bit platform
             wxtype = '_'
             tgtcpu = ''
-        else:
+        else:  # 64-bit platform
             wxtype = '_x64_'
             tgtcpu = 'TARGET_CPU=X64'
 
@@ -358,19 +371,19 @@ def build_wxWidgets():
         wx_path = 'wxWidgets/wxWidgets-' + wx_version
 
         # Download wxWidgets files if they don't already exist
-        if not os.path.exists(wxWidgets_path + '/wxWidgets-' + wx_version + '/lib/vc' + wxtype + 'dll'):
-            os.makedirs(wxWidgets_path + '/wxWidgets-' + wx_version, exist_ok=True)
-            os.chdir(wxWidgets_path + '/wxWidgets-' + wx_version)
+        if not os.path.exists(f'{wx_path}/lib/vc{wxtype}dll'):
+            os.makedirs(wx_path, exist_ok=True)
+            os.chdir(wx_path)
 
             os.chdir('build/msw')
 
             def wxwidgets_build_command(build_type):
-                return f'nmake -f makefile.vc OFFICIAL_BUILD=1 COMPILER_VERSION={vc_major_version}{vc_minor_version} {tgtcpu} SHARED=1 BUILD={build_type} > "{logs_path}\\wxWidgets_build_{build_type}.log" 2>&1'
+                return (f'nmake -f makefile.vc OFFICIAL_BUILD=1 COMPILER_VERSION='
+                        f'{vc_major_version}{vc_minor_version} {tgtcpu} SHARED=1 BUILD={build_type}'
+                        f' > "{logs_path}\\wxWidgets_build_{build_type}.log" 2>&1')
 
-            wxwidgets_build_type = 'debug'
-
-            # print('-- Compiling debug wxWidgets. This could take a while...')
-            # os.system(wxwidgets_build_command('debug'))
+            print('-- Compiling debug wxWidgets. This could take a while...')
+            os.system(wxwidgets_build_command('debug'))
 
             print('-- Compiling release wxWidgets. This could take a while...')
             os.system(wxwidgets_build_command('release'))
@@ -386,7 +399,8 @@ def build_wxWidgets():
         else:
             print('-- wxWidgets already configured')
             return
-    else:
+
+    else:  # running on something other than Windows
         # Set build path based on version
         wx_path = wxWidgets_path + '/wxWidgets-' + wx_version
 
@@ -510,9 +524,9 @@ def build_cspice():
         print('Compiling CSPICE debug library. This could take a while...')
         os.environ[
             "TKCOMPILEOPTIONS"] = TKCOMPILEARCH + ' -c -ansi ' + OSXFLAGS + ' -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
-        makeFlag = os.system('./mkprodct.csh > "' + logs_path + '/cspice_build_debug.log" 2>&1')
+        make_flag = os.system('./mkprodct.csh > "' + logs_path + '/cspice_build_debug.log" 2>&1')
 
-        if makeFlag == 0:
+        if make_flag == 0:
             os.system('mv ../../lib/cspice.a ../../lib/cspiced.a')
         else:
             print('CSPICE debug build failed. Fix errors and try again.')
@@ -521,9 +535,9 @@ def build_cspice():
         print('Compiling CSPICE release library. This could take a while...')
         os.environ[
             "TKCOMPILEOPTIONS"] = TKCOMPILEARCH + ' -c -ansi ' + OSXFLAGS + ' -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
-        makeFlag = os.system('./mkprodct.csh > "' + logs_path + '/cspice_build_release.log" 2>&1')
+        make_flag = os.system('./mkprodct.csh > "' + logs_path + '/cspice_build_release.log" 2>&1')
 
-        if makeFlag != 0:
+        if make_flag != 0:
             print('CSPICE release build failed. Fix errors and try again.')
 
 
