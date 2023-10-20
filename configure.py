@@ -138,7 +138,8 @@ def download_depends():
         # Download wxWidgets source
         print('\nDownloading wxWidgets ' + wx_version + '...')
         os.system(
-            'curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v' + wx_version + '/wxWidgets-' + wx_version + '.tar.bz2 > wxWidgets.tar.bz2')
+            f'curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v{wx_version}'
+            f'/wxWidgets-{wx_version}.tar.bz2 > wxWidgets.tar.bz2')
         tar = tarfile.open('wxWidgets.tar.bz2', 'r:bz2')
         tar.extractall()
         tar.close()
@@ -147,12 +148,13 @@ def download_depends():
         # Make sure wxWidgets was downloaded
         if not os.path.exists(wxWidgets_path + '/wxWidgets-' + wx_version):
             print('Error in wxWidgets-' + wx_version + ' download.')
+            global wx_build
             wx_build = False
 
     # Download CSPICE if it doesn't already exist
     if not os.path.exists(cspice_path):
         # Create & change directories
-        os.makedirs(depends_path + '/cspice', exist_ok=True)
+        # os.makedirs(depends_path + '/cspice', exist_ok=True)
         os.makedirs(cspice_path, exist_ok=True)
         os.chdir(cspice_path)
 
@@ -169,13 +171,13 @@ def download_depends():
             cspice_dir = 'cspice64'
             cspice_bit = '64bit'
 
-        print('\nDownloading ' + cspice_bit + ' CSPICE ' + cspice_version + '...')
+        print(f'\nDownloading {cspice_bit} CSPICE {cspice_version}...')
         if sys.platform == 'win32':
             # Download and extract Spice for Windows (32/64-bit)
             os.system(
                 'curl -L http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_' + cspice_version + '/C/PC_Windows_VisualC_' + cspice_bit + '/packages/cspice.zip > cspice.zip')
             os.system(f'"{depends_path}/bin/7za/7za.exe" x cspice.zip > nul')
-            os.chdir(depends_path)  # switch back to the depends folder from /depends/cspice/windows
+            os.chdir(cspice_path)  # cspice_path: depends/cspice for now
             os.rename('cspice', cspice_dir)
 
         else:  # Platform is not Windows
@@ -369,13 +371,18 @@ def build_wxWidgets():
 
         # Generate filenames to download
         wx_path = 'wxWidgets/wxWidgets-' + wx_version
+        os.chdir(depends_path)  # switch back to depends so subsequent relative directory changes work
 
         # Download wxWidgets files if they don't already exist
         if not os.path.exists(f'{wx_path}/lib/vc{wxtype}dll'):
             os.makedirs(wx_path, exist_ok=True)
             os.chdir(wx_path)
-
-            os.chdir('build/msw')
+            try:
+                os.chdir('build/msw')
+            except FileNotFoundError:
+                print(f'Current directory: {os.getcwd()}')
+                print(f'Items in directory: {os.listdir()}')
+                raise
 
             def wxwidgets_build_command(build_type):
                 return (f'nmake -f makefile.vc OFFICIAL_BUILD=1 COMPILER_VERSION='
@@ -469,7 +476,7 @@ def build_cspice():
     if sys.platform == 'win32':
         cspice_type = 'PC_Linux_GCC'
 
-        # Determine 32 or 64 bit system
+        # Determine 32 or 64-bit system
         if struct.calcsize("P") * 8 == 32:
             cspice_dir = 'cspice32'
             cspice_bit = '32bit'
@@ -479,18 +486,27 @@ def build_cspice():
 
         # Build CSPICE if cspiced.lib does not already exist
         if not os.path.exists(cspice_path + '/' + cspice_dir + '/lib/cspiced.lib'):
-            os.chdir(cspice_path + '/' + cspice_dir + '/src/cspice')
+            try:
+                os.chdir(f'{cspice_path}/{cspice_dir}/src/cspice')
+            except FileNotFoundError:
+                print(f'build_cspice: Failed to switch to {cspice_path}/windows/cspice/src/cspice')
+                print(f'cspice_path: {cspice_path}')
+                print(f'Current working directory: {os.getcwd()}')
+                print(f'Directory contents: {os.listdir()}')
+                raise
 
             def compile_cspice(build_type):
                 print(f'-- Compiling {build_type} CSPICE. This could take a while...')
                 os.system(
-                    f'cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c > "{logs_path}\\cspice_build_{build_type}.log" 2>&1')
+                    f'cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS'
+                    f' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
+                    f' "{logs_path}\\cspice_build_{build_type}.log" 2>&1')
                 os.system(
                     f'link -lib /out:..\\..\\lib\\cspiced.lib *.obj >> "{logs_path}\\cspice_build_{build_type}.log" 2>&1')
 
                 os.system('del *.obj')
 
-            # compile_cspice('debug')
+            compile_cspice('debug')
             compile_cspice('release')
 
             os.chdir(depends_path)
