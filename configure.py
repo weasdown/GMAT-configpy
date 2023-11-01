@@ -10,16 +10,14 @@ pcre_version = '8.45'
 java_version = '11.0.5'
 java_update = '10'
 wx_build = True
-wx_version = '3.0.4'
-xerces_version = '3.2.2'
+wx_version = '3.0.2'  # 3.0.2 is recommended but throws compiler.h error in log
+xerces_version = '3.1.4'
 osx_min_version = '10.15'
 osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
 vs_version = 2022
 vs_major_version = '17'
 vc_major_version = '14'
 vc_minor_version = '1'
-
-xerces_build = True
 
 gmat_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Path to gmat folder
 depends_path = str(gmat_path + '/depends')  # Path to depends folder
@@ -281,14 +279,16 @@ def build_xerces():
             os.chdir(xerces_path + '/build/windows')
             print('Setting up CMake...')
             os.system(
-                f'cmake -G "Visual Studio {vs_major_version} {str(vs_version)}" -DBUILD_SHARED_LIBS:BOOL=OFF -Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="{xerces_outdir}" "{xerces_path}" > "{logs_path}\\xerces_cmake.log" 2>&1')
+                f'cmake -G "Visual Studio {vs_major_version} {str(vs_version)}" -DBUILD_SHARED_LIBS:BOOL=OFF '
+                f'-Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="{xerces_outdir}" "{xerces_path}" > '
+                f'"{logs_path}\\xerces_cmake.log" 2>&1')
 
             print('-- Compiling debug Xerces. This could take a while...')
             os.system(f'cmake --build . --config Debug --target install > "{logs_path}\\xerces_build_debug.log" 2>&1')
 
             print('-- Compiling release Xerces. This could take a while...')
-            os.system(
-                f'cmake --build . --config Release --target install > "{logs_path}\\xerces_build_release.log" 2>&1')
+            os.system(f'cmake --build . --config Release --target install > '
+                      f'"{logs_path}\\xerces_build_release.log" 2>&1')
         else:
             print('-- Xerces already configured')
         return
@@ -560,6 +560,7 @@ def build_cspice():
 def build_swig():
     # Windows is pre-built
     if sys.platform == 'win32':
+        print('\n-- SWIG for Windows comes pre-built')
         return
 
     print('\n********** Configuring SWIG **********')
