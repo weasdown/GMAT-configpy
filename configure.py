@@ -4,6 +4,81 @@ import tarfile
 import struct
 import platform as mac_plat
 import shutil
+import platform
+import shutil
+
+cspice_version = 'N0067'
+swig_version = '4.0.2'
+pcre_version = '8.45'
+java_version = '11.0.5'
+java_update = '10'
+wx_version = '3.0.4'
+xerces_version = '3.2.2'
+osx_min_version = '10.15'
+osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
+vs_version = 2022
+vs_major_version = '17'
+vc_major_version = '14'
+vc_minor_version = '1'
+
+gmat_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Path to gmat folder
+depends_path = str(f'{gmat_path}/depends')  # Path to depends folder
+logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
+
+# Create path variables
+bin_path = f'{depends_path}/bin'
+f2c_path = f'{depends_path}/f2c'
+cspice_path = f'{depends_path}/cspice'
+swig_path = f'{depends_path}/swig'
+java_path = f'{depends_path}/java'
+wxWidgets_path = f'{depends_path}/wxWidgets'
+xerces_path = f'{depends_path}/xerces'
+sofa_path = f'{depends_path}/sofa'
+tsplot_path = f'{depends_path}/tsPlot'
+
+# Platform-based setup
+if sys.platform == 'win32':
+    PLATFORM_NAME = 'windows'
+    swig_dir = f'{swig_path}/swigwin'
+    setup_windows()
+else:
+    if sys.platform == 'darwin':
+        PLATFORM_NAME = 'macosx'
+
+        cmake_platform_name = 'cocoa'
+        wx_platform_name = 'cocoa'
+        swig_platform_name = 'cocoa'
+
+        wx_ext = 'dylib'
+
+    else:
+        PLATFORM_NAME = 'linux'
+        cmake_platform_name = 'linux'
+        wx_platform_name = 'gtk'
+        swig_platform_name = 'linux'
+        wx_ext = 'so'
+
+cspice_path = f'{cspice_path}/{PLATFORM_NAME}'
+java_path = f'{java_path}/{PLATFORM_NAME}'
+
+if struct.calcsize("P") * 8 == 32:
+    # TODO Fill with any lines that ask about CPU bit-ness
+    wx_type = '_'
+    wx_tgt_cpu = ''
+    cspice_bit = '32'
+else:  # assume 64-bit
+    wx_type = '_x64_'
+    wx_tgt_cpu = 'TARGET_CPU=X64'
+    cspice_bit = '32'
+
+# Set up dir/file names for downloaded files
+cspice_dir = f'cspice{cspice_bit}'
+pcre_filename = f'pcre-{pcre_version}.tar.gz'
+
+# Get number of cores for multithreaded compilation
+NCORES = str(os.cpu_count())
+if NCORES == 'None':
+    NCORES = '1'
 
 
 # Load the Visual Studio path settings
@@ -60,7 +135,6 @@ def download_depends():
     """
     Download GMAT dependencies.
     """
-
     def download_xerces():
         # Download xerces if it doesn't already exist
         if os.path.exists(xerces_path):
@@ -268,6 +342,7 @@ def build_xerces(plat: str):
         print('-- Compiling release Xerces. This could take a while...')
         os.system(f'cmake --build . --config Release --target install > '
                   f'"{logs_path}\\xerces_build_release.log" 2>&1')
+
         return
 
     # Out-of-source xerces build/install locations
@@ -300,7 +375,7 @@ def build_xerces(plat: str):
         f'-mmacosx-version-min={osx_min_version} --sysroot={osx_sdk}'
 
     common_xerces_flags = ('--disable-shared --disable-netaccessor-curl'
-                           ' --disable-transcoder-icu --disable-msgloader-icu')
+                            ' --disable-transcoder-icu --disable-msgloader-icu')
 
     print(f'Configuring Xerces {xerces_version} debug library. This could take a while...')
     common_c_flags = f'-O0 -g -fPIC {macos_flags}'
@@ -312,7 +387,7 @@ def build_xerces(plat: str):
     make_depend('xerces', 'install_debug')
 
     os.rename(f'{xerces_install_path}/lib/libxerces-c.a',
-              f'{xerces_install_path}/lib/libxerces-cd.a')
+                f'{xerces_install_path}/lib/libxerces-cd.a')
     os.system('make clean > /dev/null 2>&1')
 
     print(f'Configuring Xerces {xerces_version} release library. This could take a while...')
@@ -406,7 +481,7 @@ def build_wxWidgets(plat: str):
             # wxWidgets 3.0.2 has a compile error due to an incorrect
             # include file on OSX 10.10+. Apply patch to fix this.
             # See [GMT-5384] and http://goharsha.com/blog/compiling-wxwidgets-3-0-2-mac-os-x-yosemite/
-            osx_ver = mac_plat.mac_ver()[0]
+            osx_ver = platform.mac_ver()[0]
             if wx_version == '3.0.2' and osx_ver > '10.10.0':
                 os.system(f'sed -i.bk "s/WebKit.h/WebKitLegacy.h/" "{wx_path}/src/osx/webview_webkit.mm"')
 
