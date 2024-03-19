@@ -4,81 +4,6 @@ import tarfile
 import struct
 import platform as mac_plat
 import shutil
-import platform
-import shutil
-
-cspice_version = 'N0067'
-swig_version = '4.0.2'
-pcre_version = '8.45'
-java_version = '11.0.5'
-java_update = '10'
-wx_version = '3.0.4'
-xerces_version = '3.2.2'
-osx_min_version = '10.15'
-osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
-vs_version = 2022
-vs_major_version = '17'
-vc_major_version = '14'
-vc_minor_version = '1'
-
-gmat_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Path to gmat folder
-depends_path = str(f'{gmat_path}/depends')  # Path to depends folder
-logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
-
-# Create path variables
-bin_path = f'{depends_path}/bin'
-f2c_path = f'{depends_path}/f2c'
-cspice_path = f'{depends_path}/cspice'
-swig_path = f'{depends_path}/swig'
-java_path = f'{depends_path}/java'
-wxWidgets_path = f'{depends_path}/wxWidgets'
-xerces_path = f'{depends_path}/xerces'
-sofa_path = f'{depends_path}/sofa'
-tsplot_path = f'{depends_path}/tsPlot'
-
-# Platform-based setup
-if sys.platform == 'win32':
-    PLATFORM_NAME = 'windows'
-    swig_dir = f'{swig_path}/swigwin'
-    setup_windows()
-else:
-    if sys.platform == 'darwin':
-        PLATFORM_NAME = 'macosx'
-
-        cmake_platform_name = 'cocoa'
-        wx_platform_name = 'cocoa'
-        swig_platform_name = 'cocoa'
-
-        wx_ext = 'dylib'
-
-    else:
-        PLATFORM_NAME = 'linux'
-        cmake_platform_name = 'linux'
-        wx_platform_name = 'gtk'
-        swig_platform_name = 'linux'
-        wx_ext = 'so'
-
-cspice_path = f'{cspice_path}/{PLATFORM_NAME}'
-java_path = f'{java_path}/{PLATFORM_NAME}'
-
-if struct.calcsize("P") * 8 == 32:
-    # TODO Fill with any lines that ask about CPU bit-ness
-    wx_type = '_'
-    wx_tgt_cpu = ''
-    cspice_bit = '32'
-else:  # assume 64-bit
-    wx_type = '_x64_'
-    wx_tgt_cpu = 'TARGET_CPU=X64'
-    cspice_bit = '32'
-
-# Set up dir/file names for downloaded files
-cspice_dir = f'cspice{cspice_bit}'
-pcre_filename = f'pcre-{pcre_version}.tar.gz'
-
-# Get number of cores for multithreaded compilation
-NCORES = str(os.cpu_count())
-if NCORES == 'None':
-    NCORES = '1'
 
 
 # Load the Visual Studio path settings
@@ -176,7 +101,7 @@ def download_depends():
             if not os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
                 raise RuntimeError(f'Error in wxWidgets-{wx_version} download.')
 
-    def download_cspice():
+    def download_cspice(plat: str):
         # Download CSPICE if it doesn't already exist
         if os.path.exists(cspice_path):
             print('CSPICE already downloaded')
@@ -186,13 +111,13 @@ def download_depends():
         os.makedirs(cspice_path, exist_ok=True)
         os.chdir(cspice_path)
 
-        if sys.platform == 'darwin':
+        if plat == 'darwin':
             cspice_type = 'MacIntel_OSX_AppleC'
         else:
             cspice_type = 'PC_Linux_GCC'
 
         print(f'\nDownloading {cspice_bit} CSPICE {cspice_version}...')
-        if sys.platform == 'win32':
+        if plat == 'win32':
             # Download and extract Spice for Windows (32/64-bit)
             os.system(f'curl -L http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}\
                     /C/PC_Windows_VisualC_{cspice_bit}/packages/cspice.zip > cspice.zip')
@@ -209,15 +134,10 @@ def download_depends():
             os.system(f'mv cspice cspice_dir')
             os.remove('cspice.tar')
 
-    def download_swig():
+    def download_swig(plat: str, swig_direc: str):
         # Download SWIG if it doesn't already exist
         # Check platform-appropriate path
-        if sys.platform == 'win32':
-            swig_dir = f'{swig_path}/swigwin'
-        else:
-            swig_dir = f'{swig_path}/swig'
-
-        if os.path.exists(swig_dir):
+        if os.path.exists(swig_direc):
             print('SWIG already downloaded')
             return
 
@@ -228,7 +148,7 @@ def download_depends():
         os.chdir(swig_path)
 
         print(f'\nDownloading SWIG {swig_version}...')
-        if sys.platform == 'win32':
+        if plat == 'win32':
             # Download and extract SWIG for Windows
             os.system(f'curl -L http://download.sourceforge.net/swig/swigwin-{swig_version}.zip\
                     > swig.zip')
@@ -293,8 +213,8 @@ def download_depends():
 
     download_xerces()
     download_wxwidgets()
-    download_cspice()
-    download_swig()
+    download_cspice(sys_plat)
+    download_swig(sys_plat, swig_dir)
     download_java()
 
     print("\nDependencies download complete")
@@ -481,13 +401,15 @@ def build_wxWidgets(plat: str):
             # wxWidgets 3.0.2 has a compile error due to an incorrect
             # include file on OSX 10.10+. Apply patch to fix this.
             # See [GMT-5384] and http://goharsha.com/blog/compiling-wxwidgets-3-0-2-mac-os-x-yosemite/
-            osx_ver = platform.mac_ver()[0]
+            osx_ver = mac_plat.mac_ver()[0]
             if wx_version == '3.0.2' and osx_ver > '10.10.0':
                 os.system(f'sed -i.bk "s/WebKit.h/WebKitLegacy.h/" "{wx_path}/src/osx/webview_webkit.mm"')
 
             # wxWidgets needs these flags on OSX
-            # NOTE on liblzma: The Mac build/test machine contains liblzma (via homebrew 'xz'), which conflicts with the wxWidgets build process
-            macos_flags = f'--with-osx_cocoa --without-liblzma --with-macosx-version-min={osx_min_version} --with-macosx-sdk={osx_sdk}'
+            # NOTE on liblzma: The Mac build/test machine contains liblzma (via homebrew 'xz'), which conflicts with
+            #  the wxWidgets build process
+            macos_flags = (f'--with-osx_cocoa --without-liblzma --with-macosx-version-min={osx_min_version} '
+                           f'--with-macosx-sdk={osx_sdk}')
 
         os.system(f'../configure {macos_flags} --enable-unicode --with-opengl \
                     --prefix="{wx_install_path}" > "{logs_path}/wxWidgets_configure.log" 2>&1')
@@ -625,92 +547,94 @@ def build_swig(plat: str):
     os.system(f'rm -Rf {swig_build_path}')
 
 
-cspice_version = 'N0067'
-swig_version = '4.0.2'
-pcre_version = '8.45'
-java_version = '11.0.5'
-java_update = '10'
-wx_version = '3.0.4'
-xerces_version = '3.2.2'
-osx_min_version = '10.15'
-osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
-vs_version = 2022
-vs_major_version = '17'
-vc_major_version = '14'
-vc_minor_version = '1'
+# cspice_version = 'N0067'
+# swig_version = '4.0.2'
+# pcre_version = '8.45'
+# java_version = '11.0.5'
+# java_update = '10'
+# wx_version = '3.0.4'
+# xerces_version = '3.2.2'
+# osx_min_version = '10.15'
+# osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
+# vs_version = 2022
+# vs_major_version = '17'
+# vc_major_version = '14'
+# vc_minor_version = '1'
+#
+# gmat_path = os.path.dirname(os.getcwd())  # Path to gmat folder
+# depends_path = str(f'{gmat_path}/depends')  # Path to depends folder
+# logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
+#
+# # Create path variables
+# bin_path = f'{depends_path}/bin'
+# f2c_path = f'{depends_path}/f2c'
+# cspice_path = f'{depends_path}/cspice'
+# swig_path = f'{depends_path}/swig'
+# java_path = f'{depends_path}/java'
+# wxWidgets_path = f'{depends_path}/wxWidgets'
+# xerces_path = f'{depends_path}/xerces'
+# sofa_path = f'{depends_path}/sofa'
+# tsplot_path = f'{depends_path}/tsPlot'
 
-gmat_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Path to gmat folder
-depends_path = str(f'{gmat_path}/depends')  # Path to depends folder
-logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
 
-# Create path variables
-bin_path = f'{depends_path}/bin'
-f2c_path = f'{depends_path}/f2c'
-cspice_path = f'{depends_path}/cspice'
-swig_path = f'{depends_path}/swig'
-java_path = f'{depends_path}/java'
-wxWidgets_path = f'{depends_path}/wxWidgets'
-xerces_path = f'{depends_path}/xerces'
-sofa_path = f'{depends_path}/sofa'
-tsplot_path = f'{depends_path}/tsPlot'
+if __name__ == '__main__':
+    print('\n*** Configuring GMAT dependencies ***\n')
 
-platform = sys.platform
-# Platform-based setup
-if platform == 'win32':
-    PLATFORM_NAME = 'windows'
-    swig_dir = f'{swig_path}/swigwin'
-    setup_windows()
-else:
-    if platform == 'darwin':
-        PLATFORM_NAME = 'macosx'
+    # Create log directory
+    if not os.path.exists(logs_path):
+        os.mkdir(logs_path)
 
-        cmake_platform_name = 'cocoa'
-        wx_platform_name = 'cocoa'
-        swig_platform_name = 'cocoa'
-
-        wx_ext = 'dylib'
-
+    sys_plat = sys.platform
+    # Platform-based setup
+    if sys_plat == 'win32':
+        PLATFORM_NAME = 'windows'
+        swig_dir = f'{swig_path}/swigwin'
+        setup_windows()
     else:
-        PLATFORM_NAME = 'linux'
-        cmake_platform_name = 'linux'
-        wx_platform_name = 'gtk'
-        swig_platform_name = 'linux'
-        wx_ext = 'so'
+        if sys_plat == 'darwin':
+            PLATFORM_NAME = 'macosx'
 
-cspice_path = f'{cspice_path}/{PLATFORM_NAME}'
-java_path = f'{java_path}/{PLATFORM_NAME}'
+            cmake_platform_name = 'cocoa'
+            wx_platform_name = 'cocoa'
+            swig_platform_name = 'cocoa'
 
-if struct.calcsize("P") * 8 == 32:
-    # TODO Fill with any lines that ask about CPU bit-ness
-    wx_type = '_'
-    wx_tgt_cpu = ''
-    cspice_bit = '32'
-else:  # assume 64-bit
-    wx_type = '_x64_'
-    wx_tgt_cpu = 'TARGET_CPU=X64'
-    cspice_bit = '32'
+            wx_ext = 'dylib'
 
-# Set up dir/file names for downloaded files
-cspice_dir = f'cspice{cspice_bit}'
-pcre_filename = f'pcre-{pcre_version}.tar.gz'
+        else:
+            PLATFORM_NAME = 'linux'
+            cmake_platform_name = 'linux'
+            wx_platform_name = 'gtk'
+            swig_platform_name = 'linux'
+            wx_ext = 'so'
 
-# Get number of cores for multithreaded compilation
-NCORES = str(os.cpu_count())
-if NCORES == 'None':
-    NCORES = '1'
+    cspice_path = f'{cspice_path}/{PLATFORM_NAME}'
+    java_path = f'{java_path}/{PLATFORM_NAME}'
 
-print('\n*** Configuring GMAT dependencies ***\n')
+    if struct.calcsize("P") * 8 == 32:
+        # TODO Fill with any lines that ask about CPU bit-ness
+        wx_type = '_'
+        wx_tgt_cpu = ''
+        cspice_bit = '32'
+    else:  # assume 64-bit
+        wx_type = '_x64_'
+        wx_tgt_cpu = 'TARGET_CPU=X64'
+        cspice_bit = '32'
 
-# Create log directory
-if not os.path.exists(logs_path):
-    os.mkdir(logs_path)
+    # Set up dir/file names for downloaded files
+    cspice_dir = f'cspice{cspice_bit}'
+    pcre_filename = f'pcre-{pcre_version}.tar.gz'
 
-download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
+    # Get number of cores for multithreaded compilation
+    NCORES = str(os.cpu_count())
+    if NCORES == 'None':
+        NCORES = '1'
 
-# Build the dependencies using CMake
-build_xerces(platform)
-build_wxWidgets(platform)
-build_cspice(platform)
-build_swig(platform)
+    download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
 
-print('\n*** Done configuring GMAT dependencies ***\n')
+    # Build the dependencies using CMake
+    build_xerces(sys_plat)
+    build_wxWidgets(sys_plat)
+    build_cspice(sys_plat)
+    build_swig(sys_plat)
+
+    print('\n*** Done configuring GMAT dependencies ***\n')
