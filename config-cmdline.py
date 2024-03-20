@@ -35,7 +35,7 @@ import platform as mac_plat
 # if __name__ == '__main__':
 #     HelloWorld().cmdloop()
 
-gmat_path = os.path.dirname(os.path.abspath(os.getcwd()))  # Path to gmat folder
+gmat_path = os.path.dirname(os.path.abspath(os.getcwd()))  # Path to gmat folder (cwd is in GMAT/depends)
 depends_dir = str(f'{gmat_path}/depends')  # Path to depends folder
 logs_path = f'{depends_dir}/logs'  # Path to depends/logs folder
 bin_path = f'{depends_dir}/bin'
@@ -473,8 +473,8 @@ def build_wxWidgets(debug: bool, release: bool, opts: dict[str, str]):
             print(type(files))
             print(files)
             # dll_name = 'wxmsw30ud_core_vc141_x64.dll'  # TODO add other required DLLs
-            dll_destination = f'{gmat_path}/application/debug'
-            shutil.copyfile(wx_db_source, dll_destination)
+            wx_db_destination = f'{gmat_path}/application/debug'
+            shutil.copyfile(wx_db_source, wx_db_destination)
 
     else:  # running on something other than Windows
         # Set build path based on version
