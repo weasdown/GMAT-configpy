@@ -37,6 +37,7 @@ import platform as mac_plat
 
 gmat_path = os.path.dirname(os.path.abspath(os.getcwd()))  # Path to gmat folder (cwd is in GMAT/depends)
 depends_dir = str(f'{gmat_path}/depends')  # Path to depends folder
+app_debug_dir = f'{gmat_path}/application/debug'  # Path to folder for wxWidgets debug files
 logs_path = f'{depends_dir}/logs'  # Path to depends/logs folder
 bin_path = f'{depends_dir}/bin'
 
@@ -103,7 +104,7 @@ def setup_windows():
     else:
         raise ValueError(f'Visual Studio version not recognised - {vs_version}.')
 
-    vs_env_command = f'\"{syscall}\" {vs_arch} & set > vsEnvironment.txt'
+    vs_env_command = f'"{syscall}" {vs_arch} & set > vsEnvironment.txt'
     print(f'Running {vs_env_command}')
     os.system(vs_env_command)
 
@@ -144,7 +145,7 @@ def download_depends(params: dict):
         print(f'\nDownloading Xerces-C {version}...')
         xerces_dl_com = (f'curl -L http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-{version}.tar.gz'
                          f' > xerces.tar.gz')
-        os.system(xerces_dl_com)
+        os.system(xerces_dl_com)  # run the Xerces download command
         with tarfile.open('xerces.tar.gz', 'r:gz') as tar:
             tar.extractall()
         os.remove('xerces.tar.gz')
@@ -184,8 +185,9 @@ def download_depends(params: dict):
 
     def download_cspice(opts: dict):
         # Download CSPICE if it doesn't already exist
-        cspice_path = depends_paths['cspice']
+        cspice_path = opts['path']
         version = versions['cspice']
+        direc = opts['dir']
 
         if os.path.exists(cspice_path):
             print('-- CSPICE already downloaded')
@@ -198,16 +200,18 @@ def download_depends(params: dict):
         print(f'\nDownloading {cpu_bits}-bit CSPICE {version}...')
         if windows:
             # Download and extract Spice for Windows (32/64-bit)
-            if os.path.exists(f'{cspice_path}/windows/cspice32'):
+            if os.path.exists(f'{cspice_path}/{direc}'):
                 print('CSPICE already downloaded')
                 return
+            zip_name = f'{direc}.zip'
             cspice_dl_com = (f'curl -L https://naif.jpl.nasa.gov/pub/naif/toolkit//C/PC_Windows_VisualC_'
-                             f'{cpu_bits}bit/packages/cspice.zip > cspice.zip')
-            os.system(cspice_dl_com)
-            os.system(f'"{depends_dir}/bin/7za/7za.exe" x cspice.zip > nul')
-            # os.system(f'"{depends_path}/bin/7za/7za.exe" x cspice.zip > cspice')
+                             f'{cpu_bits}bit/packages/cspice.zip > {zip_name}')
+            os.system(cspice_dl_com)  # run command to download CSPICE
+            os.system(f'"{depends_dir}/bin/7za/7za.exe" x {zip_name} > nul')
+            # os.system(f'"{depends_dir}/bin/7za/7za.exe" x cspice.zip > cspice')  # TODO remove
             # os.chdir(cspice_path)  # cspice_path: depends/cspice for now
-            os.rename('cspice', opts['dir'])
+            os.rename('cspice', direc)
+            os.remove(zip_name)
 
         else:  # Platform is not Windows
             # Download and extract Spice for Mac/Linux (32/64-bit)
@@ -216,7 +220,7 @@ def download_depends(params: dict):
                       f'{cspice_type}"_{cpu_bits}/packages/cspice.tar.Z > cspice.tar.Z')
             os.system('gzip -d cspice.tar.Z')
             os.system('tar -xf cspice.tar')
-            os.system(f'mv cspice cspice_dir')
+            os.system(f'mv cspice {direc}')
             os.remove('cspice.tar')
 
     def download_swig(opts: dict):
@@ -341,14 +345,22 @@ def build_xerces(debug: bool, release: bool, ):
         os.makedirs(f'{xerces_path}/build/windows', exist_ok=True)
         os.chdir(f'{xerces_path}/build/windows')
         print('-- Setting up Xerces build')
+        vs_maj_ver = versions['vs_major']
+        vs_ver = versions['vs']
+        arch = 'Win64'  # TODO: dependent on 32/64-bit?
+
+        # From clean configure.py: (TODO remove - debugging only)
+        # os.system('cmake -G "Visual Studio ' + vs_major_version + ' ' + str(vs_version) + ' ' + xerces_arch +
+        #           '" -DBUILD_SHARED_LIBS:BOOL=OFF -Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="' + xerces_outdir +
+        #           '" "' + xerces_path + '"  > ' + logs_path + '\\xerces_cmake.log 2>&1')
+
         os.system(
-            f'cmake -G "Visual Studio {versions["vs_major"]} {versions["vs"]}" '
-            f'-DBUILD_SHARED_LIBS:BOOL=OFF -Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="{xerces_outdir}" '
-            f'"{xerces_path}" > "{logs_path}/xerces_cmake.log" 2>&1')
+            f'cmake -G "Visual Studio {vs_maj_ver} {vs_ver}" -DBUILD_SHARED_LIBS:BOOL=OFF -Dtranscoder=windows '
+            f'-DCMAKE_INSTALL_PREFIX="{xerces_outdir}" "{xerces_path}" > "{logs_path}/xerces_cmake.log" 2>&1')
 
         if debug:
             print('-- Compiling debug Xerces. This could take a while...')
-            os.system(f'cmake --build . --config Debug --target install > {logs_path}/xerces_build_debug.log" 2>&1')
+            os.system(f'cmake --build . --config Debug --target install > "{logs_path}/xerces_build_debug.log" 2>&1')
 
         if release:
             print('-- Compiling release Xerces. This could take a while...')
@@ -392,7 +404,7 @@ def build_xerces(debug: bool, release: bool, ):
         print(f'Configuring Xerces {version} debug library. This could take a while...')
         common_c_flags = f'-O0 -g -fPIC {macos_flags}'
         os.system(f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" CXXFLAGS={common_c_flags}" '
-              f'--prefix="{xerces_install_path}" > {logs_path}/xerces_configure_debug.log" 2>&1')
+                  f'--prefix="{xerces_install_path}" > {logs_path}/xerces_configure_debug.log" 2>&1')
 
         make_depend('xerces', 'build_debug')
         make_depend('xerces', 'install_debug')
@@ -470,11 +482,9 @@ def build_wxWidgets(debug: bool, release: bool, opts: dict[str, str]):
         if debug:
             wx_db_source = f'{wxwidgets_path}/wxWidgets-{version}/lib/vc_x64_dll'
             files = os.listdir(wx_db_source)
-            print(type(files))
-            print(files)
-            # dll_name = 'wxmsw30ud_core_vc141_x64.dll'  # TODO add other required DLLs
-            wx_db_destination = f'{gmat_path}/application/debug'
-            shutil.copyfile(wx_db_source, wx_db_destination)
+            files = os.listdir(wx_db_source)
+            for file in files:
+                shutil.copytree(wx_db_source, app_debug_dir, dirs_exist_ok=True)
 
     else:  # running on something other than Windows
         # Set build path based on version
@@ -529,14 +539,15 @@ def build_wxWidgets(debug: bool, release: bool, opts: dict[str, str]):
 
 def build_cspice(debug: bool, release: bool, opts: dict):
     print('\n********** Configuring CSPICE **********')
-    path = depends_paths['cspice']
+    path = opts['path']
     direc = opts['dir']
 
     if windows:
-        # Build CSPICE if cspiced.lib does not already exist
-        if os.path.exists(f'{path}/{direc}/lib/cspiced.lib'):
-            print('-- CSPICE already configured')
-            return
+        # # Build CSPICE if cspiced.lib does not already exist
+        # if debug and os.path.exists(f'{path}/{direc}/lib/cspiced.lib') or os.path.exists(f'{path}/{direc}/lib/cspice.lib'):
+        #     # TODO separate conditions for release/debug and build a missing one even if other present
+        #     print('-- CSPICE already configured')
+        #     return
 
         try:
             os.chdir(f'{path}/{direc}/src/cspice')
@@ -547,12 +558,41 @@ def build_cspice(debug: bool, release: bool, opts: dict):
             print(f'Directory contents: {os.listdir()}')
             raise
 
-        def compile_cspice(build_type):
+        def compile_cspice(build_type: str):
+            # From clean configure.py: (TODO remove - debugging only)
+            # os.system('cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS'
+            #           ' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
+            #           ' ' + logs_path + '/cspice_build_debug.log 2>&1')
+            # os.system('link -lib /out:../../lib/cspiced.lib *.obj >> ' + logs_path + '/cspice_build_debug.log 2>&1')
+
+            # os.system('del *.obj')
+
+            # print('-- Compiling release CSPICE. This could take a while...')
+            # os.system('cl /c /O2 /MP -D_COMPLEX_DEFINED -DMSDOS'
+            #           ' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
+            #           ' ' + logs_path + '/cspice_build_release.log 2>&1')
+            # os.system('link -lib /out:../../lib/cspice.lib *.obj >> ' + logs_path + '/cspice_build_release.log 2>&1')
+
+            # os.system('del *.obj')
+
+            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+            if build_type == 'debug':
+                build_flag = '/DEBUG /Z7'
+                lib_flag = 'd'
+            elif build_type == 'release':
+                build_flag = '/O2'
+                lib_flag = ''
+            else:
+                raise SyntaxError(f'build_type "{build_type}" not recognized')
+
+            os.chdir(f'{path}/{direc}/src/cspice')
+            print(os.getcwd())
             print(f'-- Compiling {build_type} CSPICE. This could take a while...')
-            os.system(f'cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS'
+            os.system(f'cl /c {build_flag} /MP -D_COMPLEX_DEFINED -DMSDOS'
                       f' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
                       f' "{logs_path}/cspice_build_{build_type}.log" 2>&1')
-            os.system(f'link -lib /out:../../lib/cspiced.lib *.obj >> '
+            os.system(f'link -lib /out:../../lib/cspice{lib_flag}.lib *.obj >> '
                       f'"{logs_path}/cspice_build_{build_type}.log" 2>&1')
 
             os.system('del *.obj')
@@ -720,17 +760,20 @@ def setup():
         'win32': {  # Windows
             'wx_opts': {'plat': plat},
             # 'cmake_plat': 'windows',  # TODO required? Correct?
+            'cspice_plat': 'windows',
             'java_plat': 'windows',
             'swig_opts': {'plat': 'windows', 'dir': f'{depends_paths["swig"]}/swigwin'},
         },
         'darwin': {  # macOS
             'wx_opts': {'plat': 'cocoa', 'ext': 'dylib'},
+            'cspice_plat': 'macosx',
             # 'cmake_plat': 'cocoa',
             'java_plat': 'macosx',
             'swig_opts': {'plat': 'cocoa', 'dir': f"{depends_paths['swig']}/swig"} | pcre_params,
         },
         'linux': {  # Linux
             'wx_opts': {'plat': 'gtk', 'ext': 'so'},
+            'cspice_plat': 'linux',
             # 'cmake_plat': 'linux',
             'java_plat': 'linux',
             'swig_opts': {'plat': 'linux', 'dir': f"{depends_paths['swig']}/swig"} | pcre_params,
@@ -748,9 +791,9 @@ def setup():
         'cores': cpu_cores,
         'bits': cpu_bits,
 
-        'cspice_opts': {'path': f'{depends_paths["cspice"]}/{plat}',
-                        # 'dir': f'cspice{cpu_bits}',  # TODO remove
-                        'dir': f'cspice32',
+        'cspice_opts': {'path': f'{depends_paths["cspice"]}/{platform_specific.get(plat).get("cspice_plat")}',
+                        'dir': f'cspice{cpu_bits}',  # TODO remove
+                        # 'dir': 'cspice',  # TODO remove
                         'type': 'MacIntel_OSX_AppleC' if macos else 'PC_Linux_GCC',
                         },
         'java_opts': java_opts(plat),
@@ -830,5 +873,3 @@ build_xerces(db, rl)
 wx_opts = setup_params['wx_opts']
 build_wxWidgets(db, rl, setup_params['wx_opts'])
 build_swig(setup_params['swig_opts'])
-
-
