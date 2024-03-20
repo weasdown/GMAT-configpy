@@ -266,7 +266,7 @@ def download_depends(params: dict):
 
     def download_java(opts: dict):
         # Download Java if it doesn't already exist
-        java_path = depends_paths['java']
+        java_path = f'{depends_paths["java"]}/{opts["plat"]}'
         version = versions['java']
         update = versions['java_update']
 
@@ -289,7 +289,6 @@ def download_depends(params: dict):
         print(f'\nDownloading Java JDK {java_full_version}...')
         if windows:
             # Download and extract AdoptOpenJDK for Windows
-            # print(f"curl command for Java download: curl -L '{java_url}.zip'")  # my code
             os.system(f'curl -L {java_url}.zip > jdk.zip')
             os.system(f'"{depends_dir}/bin/7za/7za.exe" x jdk.zip > nul')
             os.rename(f'jdk-{java_full_version}', 'jdk')
@@ -544,6 +543,7 @@ def build_cspice(debug: bool, release: bool, opts: dict):
 
     if windows:
         # # Build CSPICE if cspiced.lib does not already exist
+        # TODO reinstate presence check
         # if debug and os.path.exists(f'{path}/{direc}/lib/cspiced.lib') or os.path.exists(f'{path}/{direc}/lib/cspice.lib'):
         #     # TODO separate conditions for release/debug and build a missing one even if other present
         #     print('-- CSPICE already configured')
@@ -587,7 +587,6 @@ def build_cspice(debug: bool, release: bool, opts: dict):
                 raise SyntaxError(f'build_type "{build_type}" not recognized')
 
             os.chdir(f'{path}/{direc}/src/cspice')
-            print(os.getcwd())
             print(f'-- Compiling {build_type} CSPICE. This could take a while...')
             os.system(f'cl /c {build_flag} /MP -D_COMPLEX_DEFINED -DMSDOS'
                       f' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
@@ -685,7 +684,7 @@ def build_swig(opts: dict):
     make_depend('SWIG', 'install')
 
     os.chdir('..')
-    os.system(f'rm -Rf {swig_build_path}')
+    os.remove(swig_build_path)
 
 
 def prompt(allowed_values: dict, prompt_text: str, print_selection: bool = False):
