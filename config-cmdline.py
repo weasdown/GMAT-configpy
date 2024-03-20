@@ -465,13 +465,16 @@ def build_wxWidgets(debug: bool, release: bool, opts: dict[str, str]):
 
         os.chdir(depends_dir)
 
-        # Once the build has finished, vc_x64_dll needs to be copied into gmat/application/debug
+        # Once the build has finished, full contents (TODO) of vc_x64_dll folder need to be copied into gmat/application/debug
         #  to enable Windows debug build. (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
         if debug:
-            dll_name = 'wxmsw30ud_core_vc141_x64.dll'  # TODO add other required DLLs
-            dll_source = f'{wxwidgets_path}/wxWidgets-{version}/lib/vc_x64_dll/{dll_name}'
-            dll_destination = f'{gmat_path}/application/debug/{dll_name}'
-            shutil.copyfile(dll_source, dll_destination)
+            wx_db_source = f'{wxwidgets_path}/wxWidgets-{version}/lib/vc_x64_dll'
+            files = os.listdir(wx_db_source)
+            print(type(files))
+            print(files)
+            # dll_name = 'wxmsw30ud_core_vc141_x64.dll'  # TODO add other required DLLs
+            dll_destination = f'{gmat_path}/application/debug'
+            shutil.copyfile(wx_db_source, dll_destination)
 
     else:  # running on something other than Windows
         # Set build path based on version
