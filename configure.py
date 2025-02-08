@@ -551,8 +551,10 @@ def build_swig(plat: str):
     os.system(f'rm -Rf {swig_build_path}')
 
 
-def unzip(path_to_zip: str) -> None:
-    os.system(f'"{depends_path}/bin/7za/7za.exe" x {path_to_zip} > nul')
+def unzip(path_to_zip: str, output_path: str = None) -> None:
+    """Unzips a .zip file in a given directory to the current directory, or to a given output directory if specified."""
+    output_arg: str = f'-o "{output_path}"' if output_path is not None else ''
+    os.system(f'"{depends_path}/bin/7za/7za.exe" x {path_to_zip} {output_arg} -r > nul')
 
 
 cspice_version = 'N0067'
