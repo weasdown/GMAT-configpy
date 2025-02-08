@@ -144,10 +144,10 @@ def download_depends():
             os.remove('cspice.tar')
         print('CSPICE download complete!')
 
-    def download_swig(plat: str, swig_directory: str):
+    def download_swig(plat: str):
         # Download SWIG if it doesn't already exist
         # Check platform-appropriate path
-        if os.path.exists(swig_directory):
+        if os.path.exists(swig_dir):
             print('SWIG already downloaded')
             return
 
@@ -230,7 +230,7 @@ def download_depends():
     download_xerces()
     download_wxwidgets()
     download_cspice(sys_plat)
-    download_swig(sys_plat, swig_dir)
+    download_swig(sys_plat)
     download_java()
 
     print('\nDependencies download complete!')
@@ -522,47 +522,46 @@ def build_cspice(plat: str):
 
 def build_swig(plat: str):
     # Windows is pre-built
-    if plat == 'windows':
+    if plat == 'win32':
         print('\n-- SWIG for Windows comes pre-built')
         return
 
-    print('\n********** Configuring SWIG **********')
+    else:
+        print('\n********** Configuring SWIG **********')
 
-    # Out-of-source SWIG build/install locations
-    swig_dir = f'{swig_path}/swig'
+        # Out-of-source SWIG build/install locations
+        swig_build_path = f'{swig_dir}/{swig_platform_name}-build'
+        swig_install_path = f'{swig_dir}/{swig_platform_name}-install'
 
-    swig_build_path = f'{swig_dir}/{swig_platform_name}-build'
-    swig_install_path = f'{swig_dir}/{swig_platform_name}-install'
+        # Find a test file to check if SWIG has already been installed
+        swig_test_file = f'{swig_install_path}/bin/swig'
 
-    # Find a test file to check if SWIG has already been installed
-    swig_test_file = f'{swig_install_path}/bin/swig'
+        # Build SWIG if the test file doesn't already exist
+        if os.path.exists(swig_test_file):
+            print(f'SWIG {swig_version} already configured')
+            return
 
-    # Build SWIG if the test file doesn't already exist
-    if os.path.exists(swig_test_file):
-        print(f'SWIG {swig_version} already configured')
-        return
+        os.makedirs(swig_build_path, exist_ok=True)
+        os.chdir(swig_build_path)
 
-    os.makedirs(swig_build_path, exist_ok=True)
-    os.chdir(swig_build_path)
+        # [GMT-6892] Build static PCRE using SWIG-provided build script
+        os.rename(f'../{pcre_filename}', f'./{pcre_filename}')
+        os.system(f'../Tools/pcre-build.sh > "{logs_path}/pcre_build.log" 2>&1')
 
-    # [GMT-6892] Build static PCRE using SWIG-provided build script
-    os.rename(f'../{pcre_filename}', f'./{pcre_filename}')
-    os.system(f'../Tools/pcre-build.sh > "{logs_path}/pcre_build.log" 2>&1')
+        # For users who compile GMAT on multiple platforms side-by-side.
+        # Running Windows configure.bat causes Mac/Linux configure scripts
+        # to have missing permissions.
+        os.system('chmod u+x ../configure')
 
-    # For users who compile GMAT on multiple platforms side-by-side.
-    # Running Windows configure.bat causes Mac/Linux configure scripts
-    # to have missing permissions.
-    os.system('chmod u+x ../configure')
+        print(f'Configuring SWIG {swig_version} tool. This could take a while...')
+        os.system(f'../configure --prefix="{swig_install_path}" > \
+                    "{logs_path}/swig_configure.log" 2>&1')
 
-    print(f'Configuring SWIG {swig_version} tool. This could take a while...')
-    os.system(f'../configure --prefix="{swig_install_path}" > \
-                "{logs_path}/swig_configure.log" 2>&1')
+        make_depend('SWIG', 'build')
+        make_depend('SWIG', 'install')
 
-    make_depend('SWIG', 'build')
-    make_depend('SWIG', 'install')
-
-    os.chdir('..')
-    os.system(f'rm -Rf {swig_build_path}')
+        os.chdir('..')
+        os.system(f'rm -Rf {swig_build_path}')
 
 
 def extract(archive: str, output_path: str = None) -> None:
@@ -662,8 +661,11 @@ if __name__ == '__main__':
     if sys_plat == 'win32':
         PLATFORM_NAME = 'windows'
         swig_dir = f'{swig_path}/swigwin'
+        swig_platform_name = 'windows'
         setup_windows()
     else:
+        swig_dir = f'{swig_path}/swig'
+
         if sys_plat == 'darwin':
             PLATFORM_NAME = 'macosx'
 
