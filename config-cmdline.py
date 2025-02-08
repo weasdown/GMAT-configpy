@@ -838,7 +838,7 @@ def menu():
     if 'Java' in api_desc:
         raise NotImplementedError
 
-    print(f'Setting up configuration "{config_desc}" '
+    print(f'\nSetting up configuration "{config_desc}" '
           f'{f"with APIs {api_desc}" if api_desc != "None" else "without APIs"}')
 
     return debug, release
