@@ -101,7 +101,7 @@ def download_depends():
             wx_url: str = f'https://github.com/wxWidgets/wxWidgets/releases/download/v{wx_version}/wxWidgets-{wx_version}.tar.bz2'
             wx_save_file: str = 'wxWidgets.tar.bz2'
             download_file(wx_url, wx_save_file)
-            extract(wx_save_file, f'wxWidgets-{wx_version}')
+            extract(wx_save_file)
             os.remove(wx_save_file)
 
             # Make sure wxWidgets was downloaded
@@ -344,7 +344,7 @@ def build_wxWidgets(plat: str):
 
     # Windows-specific build
     if plat == 'win32':
-        wx_path = f'{wxWidgets_path}/{wx_version_folder}/{wx_version_folder}'
+        wx_path = f'{wxWidgets_path}/{wx_version_folder}'
 
         dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'
         dll_folder_final: str = dll_folder_initial.replace(wx_type, '')
@@ -354,7 +354,7 @@ def build_wxWidgets(plat: str):
             return
 
         if not os.path.exists(wx_path):
-            raise FileNotFoundError(wx_path, f'Could not find folder "{wx_version_folder}" to build wxWidgets.')
+            raise FileNotFoundError(wx_path, f'Could not find folder "{wx_path}" to build wxWidgets.')
 
         os.chdir(wx_path)
         try:
@@ -591,12 +591,12 @@ def extract(archive: str, output_path: str = None) -> None:
         raise NotImplementedError(f'Unzipping for platform "{sys.platform}" is not yet supported')
 
     if extension == '.zip':
-        output_path_arg: str = '' if output_path is None else f'-o"{output_path}" '
+        output_path_arg: str = '' if output_path is None else f'-o"./{output_path}" '
         os.system(f'{seven_zip_exe} x {archive} -r {output_path_arg}> nul')
 
     elif extension == '.bz2':
         with tarfile.open(archive, 'r:bz2') as tar:
-            tar.extractall(filter='data', path=output_path)
+            tar.extractall(filter='data', path=f'./{output_path}' if output_path is not None else '.')
 
     elif extension == '.gz':
         raise NotImplementedError
