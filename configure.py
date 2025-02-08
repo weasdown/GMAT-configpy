@@ -580,16 +580,14 @@ def extract(archive: str, output_path: str = None) -> None:
     """
     filename, extension = os.path.splitext(archive)
 
-    if output_path is None:
-        output_path: str = filename  # e.g. cspice.zip extracts to a folder called cspice
-
     if sys.platform =='win32':  # TODO use Platform enum
         seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
     else:
         raise NotImplementedError(f'Unzipping for platform "{sys.platform}" is not yet supported')
 
     if extension == '.zip':
-        os.system(f'{seven_zip_exe} x {archive} -r -o"{output_path}" > nul')
+        output_path_arg: str = '' if output_path is None else '-o"{output_path}" '
+        os.system(f'{seven_zip_exe} x {archive} -r {output_path_arg}> nul')
 
     elif extension == '.bz2':
         with tarfile.open(archive, 'r:bz2') as tar:
