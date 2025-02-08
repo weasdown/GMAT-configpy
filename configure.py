@@ -590,7 +590,7 @@ def extract(archive: str, output_path: str = None) -> None:
         raise NotImplementedError(f'Unzipping for platform "{sys.platform}" is not yet supported')
 
     if extension == '.zip':
-        output_path_arg: str = '' if output_path is None else '-o"{output_path}" '
+        output_path_arg: str = '' if output_path is None else f'-o"{output_path}" '
         os.system(f'{seven_zip_exe} x {archive} -r {output_path_arg}> nul')
 
     elif extension == '.bz2':
