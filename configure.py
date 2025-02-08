@@ -120,7 +120,7 @@ def download_depends():
         else:
             cspice_type = 'PC_Linux_GCC'
 
-        print(f'\nDownloading {cspice_bit} CSPICE {cspice_version}...')
+        print(f'\nDownloading {cspice_bit}-bit CSPICE {cspice_version}...')
         if plat == 'win32':
             # Download and extract Spice for Windows (32/64-bit)
             os.system(f'curl -L http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}\
