@@ -131,7 +131,6 @@ def download_depends():
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
             download_file(cspice_url, 'cspice.zip')
             extract('cspice.zip')
-            os.chdir(cspice_path)  # cspice_path: depends/cspice for now
             os.rename('cspice', cspice_dir)
             os.remove('cspice.zip')
 
