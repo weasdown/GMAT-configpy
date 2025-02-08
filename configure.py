@@ -70,8 +70,8 @@ def download_depends():
 
         # Download and extract xerces
         print(f'\nDownloading Xerces-C {xerces_version}...')
-        os.system(f'curl -L http://archive.apache.org/dist/xerces/c/3/sources/\
-                xerces-c-{xerces_version}.tar.gz > xerces.tar.gz')
+        os.system(f'curl -L http://archive.apache.org/dist/xerces/c/3/sources/'
+                  f'xerces-c-{xerces_version}.tar.gz > xerces.tar.gz')
         with tarfile.open('xerces.tar.gz', 'r:gz') as tar:
             tar.extractall()
         os.remove('xerces.tar.gz')
@@ -91,8 +91,8 @@ def download_depends():
 
             # Download wxWidgets source
             print(f'\nDownloading wxWidgets {wx_version}...')
-            os.system(f'curl -L https://github.com/wxWidgets/wxWidgets/releases/download/\
-                    v{wx_version}/wxWidgets-{wx_version}.tar.bz2 > wxWidgets.tar.bz2')
+            os.system(f'curl -L https://github.com/wxWidgets/wxWidgets/releases/download/'
+                      f'v{wx_version}/wxWidgets-{wx_version}.tar.bz2 > wxWidgets.tar.bz2')
             with tarfile.open('wxWidgets.tar.bz2', 'r:bz2') as tar:
                 tar.extractall()
             os.remove('wxWidgets.tar.bz2')
