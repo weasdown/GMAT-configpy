@@ -347,7 +347,7 @@ def build_wxWidgets(plat: str):
         wx_path = f'{wxWidgets_path}/{wx_version_folder}/{wx_version_folder}'
         os.chdir(depends_path)  # switch back to depends so later relative directory changes work
 
-        if os.path.exists(f'{wx_path}/lib/vc141{wx_type}dll'):
+        if os.path.exists(f'{wx_path}/lib/vc{vc_major_version}{vc_minor_version}{wx_type}dll'):
             print('-- wxWidgets already configured')
             return
 
