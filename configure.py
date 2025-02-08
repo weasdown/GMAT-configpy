@@ -567,6 +567,15 @@ def extract(archive: str, output_path: str = None) -> None:
     Unzips a .zip or .tar file in a given directory to the current directory, or to a given output directory if specified.
 
     .tar files can be .tar, .tar.gz or .tar.bz2.
+
+    :param archive: an archive file to extract.
+    :type archive: str
+
+    :param output_path: an optional path to extract the archive to that if given must be relative to the current working directory. Defaults to the current working directory.
+    :type output_path: str
+
+    :return: None
+    :rtype: NoneType
     """
     filename, extension = os.path.splitext(archive)
 
