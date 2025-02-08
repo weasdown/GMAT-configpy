@@ -232,7 +232,7 @@ def download_depends():
     download_swig(sys_plat, swig_dir)
     download_java()
 
-    print("\nDependencies download complete")
+    print('\nDependencies download complete!')
 
 
 def make_depend(dependency: str, install_type: str):
