@@ -72,8 +72,8 @@ def download_depends():
 
         # Download and extract xerces
         print(f'\nDownloading Xerces-C {xerces_version}...')
-        os.system(f'curl -L http://archive.apache.org/dist/xerces/c/3/sources/'
-                  f'xerces-c-{xerces_version}.tar.gz > xerces.tar.gz')
+        xerces_url: str = f'http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-{xerces_version}.tar.gz'
+        download_file(xerces_url, 'xerces.tar.gz')
         with tarfile.open('xerces.tar.gz', 'r:gz') as tar:
             tar.extractall(filter='data')
         os.remove('xerces.tar.gz')
@@ -157,15 +157,13 @@ def download_depends():
         print(f'\nDownloading SWIG {swig_version}...')
         if plat == 'win32':
             # Download and extract SWIG for Windows
-            os.system(f'curl -L http://download.sourceforge.net/swig/swigwin-{swig_version}.zip\
-                    > swig.zip')
-            os.system(f'"{depends_path}/bin/7za/7za.exe" x swig.zip > nul')
+            download_file(f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip', 'swig.zip')
+            unzip('swig.zip')
             os.rename(f'swigwin-{swig_version}', 'swigwin')
             os.remove('swig.zip')
         else:
             # Download and extract SWIG for Mac/Linux
-            os.system(f'curl -L http://download.sourceforge.net/swig/swig-{swig_version}.tar.gz\
-                    > swig.tar.gz')
+            download_file(f'http://download.sourceforge.net/swig/swigwin-{swig_version}.tar.gz', 'swig.tar.gz')
             os.system('gzip -d swig.tar.gz')
             os.system('tar -xf swig.tar')
             os.system(f'mv swig-{swig_version} swig')
@@ -174,8 +172,9 @@ def download_depends():
             # [GMT-6892] Download PCRE into SWIG directory
             print(f'\nDownloading PCRE {pcre_version} for use with SWIG...')
             os.chdir(swig_dir)
-            os.system(f'curl -L https://sourceforge.net/projects/pcre/files/pcre\
-                    /{pcre_version}/{pcre_filename}/download > {pcre_filename}')
+            pcre_url: str = f'https://sourceforge.net/projects/pcre/files/pcre/{pcre_version}/{pcre_filename}/download'
+            download_file(pcre_url, pcre_filename)
+
 
     def download_java():
         # Download Java if it doesn't already exist
@@ -205,9 +204,13 @@ def download_depends():
         print(f'\nDownloading Java JDK {java_full_version}...')
         if sys.platform == 'win32':
             # Download and extract AdoptOpenJDK for Windows
-            # print(f"curl command for Java download: curl -L '{java_url}.zip'")  # my code
-            os.system(f'curl -L {java_url}.zip > jdk.zip')
-            os.system(f'"{depends_path}/bin/7za/7za.exe" x jdk.zip > nul')
+            download_file(java_url, 'jdk.zip')
+
+            # Extract the downloaded zip to a folder with the full version number as its name
+
+            # os.system(f'"{depends_path}/bin/7za/7za.exe" x jdk.zip -o "jdk-{java_full_version}" -r > nul')  # TODO remove
+            unzip('jdk.zip')
+            print(f'Looking for old Java name: "jdk-{java_full_version}" in {os.getcwd()}')  # TODO remove
             os.rename(f'jdk-{java_full_version}', 'jdk')
             os.remove('jdk.zip')
         else:
@@ -564,6 +567,10 @@ def extract_tar(path_to_tar:str)->None:
     # TODO handle .tar.gz and .tar
     os.system('gzip -d jdk.tar.gz')
     os.system('tar -xf jdk.tar')
+
+
+def download_file(url: str, save_name: str)->None:
+    os.system(f'curl -L {url} > {save_name}')
 
 
 cspice_version = 'N0067'
