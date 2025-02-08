@@ -697,6 +697,8 @@ if __name__ == '__main__':
 
     download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
 
+    sys.exit(0)  # TODO remove
+
     # Build the dependencies using CMake
     build_xerces(sys_plat)
     build_wxWidgets(sys_plat)
