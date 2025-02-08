@@ -344,11 +344,9 @@ def build_wxWidgets(plat: str):
 
     # Windows-specific build
     if plat == 'win32':
-        # Generate filenames to download
         wx_path = f'{wxWidgets_path}/{wx_version_folder}/{wx_version_folder}'
         os.chdir(depends_path)  # switch back to depends so later relative directory changes work
 
-        # Download wxWidgets files if they don't already exist
         if os.path.exists(f'{wx_path}/lib/vc{wx_type}dll'):
             print('-- wxWidgets already configured')
             return
