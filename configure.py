@@ -200,23 +200,21 @@ def download_depends():
         else:
             java_os_name = 'linux'
 
-        java_base_url = f'https://github.com/AdoptOpenJDK/openjdk{java_major_version}\
-            -binaries/releases/download/jdk-{java_full_version}/'
-        java_url = f'{java_base_url}OpenJDK{java_major_version}U-jdk_x64_{java_os_name}\
-            _hotspot_{java_version}_{java_update}'
+        java_base_url = f'https://github.com/AdoptOpenJDK/openjdk{java_major_version}-binaries/releases/download/jdk-{java_full_version}'
+        extension: str = 'zip' if sys.platform == 'win32' else 'tar.gz' # TODO use Platform enum
+        java_url = f'{java_base_url}/OpenJDK{java_major_version}U-jdk_x64_{java_os_name}_hotspot_{java_version}_{java_update}.{extension}'
+        downloaded_file:str = f'jdk.{extension}'
 
         print(f'\nDownloading Java JDK {java_full_version}...')
         if sys.platform == 'win32':
             # Download and extract AdoptOpenJDK for Windows
-            download_file(java_url, 'jdk.zip')
+            download_file(java_url, downloaded_file)
 
             # Extract the downloaded zip to a folder with the full version number as its name
-
-            # os.system(f'"{depends_path}/bin/7za/7za.exe" x jdk.zip -o "jdk-{java_full_version}" -r > nul')  # TODO remove
-            unzip('jdk.zip')
-            print(f'Looking for old Java name: "jdk-{java_full_version}" in {os.getcwd()}')  # TODO remove
+            unzip(downloaded_file, f'jdk-{java_full_version}')
             os.rename(f'jdk-{java_full_version}', 'jdk')
-            os.remove('jdk.zip')
+            os.remove(downloaded_file)
+
         else:
             # Download and extract AdoptOpenJDK for Mac/Linux
             os.system(f'curl -L {java_url}.tar.gz > jdk.tar.gz')
