@@ -480,44 +480,45 @@ def build_cspice(plat: str):
         cspice_win()
         return
 
-    # Windows would have returned or thrown error so below is macOS/Linux specific
-    spice_path = cspice_path + f'/{cspice_dir}'
-    tk_compile_arch = f'-m{cspice_bit}'
-    os.system(f'export TKCOMPILEARCH="{tk_compile_arch}"')
-
-    flags = '' if sys.platform != 'darwin' else f'-mmacosx-version-min={osx_min_version} -Wno-error=implicit-function-declaration --sysroot={osx_sdk}'
-
-    # if sys.platform == 'darwin':  # macOS
-    #     macos_flags = f'-mmacosx-version-min={osx_min_version} -Wno-error=implicit-function-declaration --sysroot={osx_sdk}'
-    # else:
-    #     macos_flags = ''
-
-    cspice_test_file = f'{spice_path}/lib/cspiced.a'
-
-    if os.path.exists(cspice_test_file):
-        print('-- CSPICE already configured')
     else:
-        os.chdir(f'{spice_path}/src/cspice')
+        # Windows would have returned or thrown error so below is macOS/Linux specific
+        spice_path = f'{cspice_path}/{cspice_dir}'
+        tk_compile_arch = f'-m{cspice_bit}'
+        os.system(f'export TKCOMPILEARCH="{tk_compile_arch}"')
 
-    # Compile debug CSPICE with integer uiolen [GMT-5044]
-    print('Compiling CSPICE debug library. This could take a while...')
-    os.environ['TKCOMPILEOPTIONS'] = f'{tk_compile_arch} -c -ansi {flags} \
-        -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
-    make_flag = os.system(f'./mkprodct.csh > "{logs_path}/cspice_build_debug.log" 2>&1')
+        flags = '' if sys.platform != 'darwin' else f'-mmacosx-version-min={osx_min_version} -Wno-error=implicit-function-declaration --sysroot={osx_sdk}'
 
-    if make_flag == 0:
-        os.system('mv ../../lib/cspice.a ../../lib/cspiced.a')
-    else:
-        print('CSPICE debug build failed. Fix errors and try again.')
+        # if sys.platform == 'darwin':  # macOS
+        #     macos_flags = f'-mmacosx-version-min={osx_min_version} -Wno-error=implicit-function-declaration --sysroot={osx_sdk}'
+        # else:
+        #     macos_flags = ''
 
-    # Compile release CSPICE with integer uiolen [GMT-5044]
-    print('Compiling CSPICE release library. This could take a while...')
-    os.environ['TKCOMPILEOPTIONS'] = f'{tk_compile_arch} -c -ansi {flags} \
-        -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
-    make_flag = os.system(f'./mkprodct.csh > "{logs_path}/cspice_build_release.log" 2>&1')
+        cspice_test_file = f'{spice_path}/lib/cspiced.a'
 
-    if make_flag != 0:
-        print('CSPICE release build failed. Fix errors and try again.')
+        if os.path.exists(cspice_test_file):
+            print('-- CSPICE already configured')
+        else:
+            os.chdir(f'{spice_path}/src/cspice')
+
+        # Compile debug CSPICE with integer uiolen [GMT-5044]
+        print('Compiling CSPICE debug library. This could take a while...')
+        os.environ['TKCOMPILEOPTIONS'] = f'{tk_compile_arch} -c -ansi {flags} \
+            -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
+        make_flag = os.system(f'./mkprodct.csh > "{logs_path}/cspice_build_debug.log" 2>&1')
+
+        if make_flag == 0:
+            os.system('mv ../../lib/cspice.a ../../lib/cspiced.a')
+        else:
+            print('CSPICE debug build failed. Fix errors and try again.')
+
+        # Compile release CSPICE with integer uiolen [GMT-5044]
+        print('Compiling CSPICE release library. This could take a while...')
+        os.environ['TKCOMPILEOPTIONS'] = f'{tk_compile_arch} -c -ansi {flags} \
+            -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
+        make_flag = os.system(f'./mkprodct.csh > "{logs_path}/cspice_build_release.log" 2>&1')
+
+        if make_flag != 0:
+            print('CSPICE release build failed. Fix errors and try again.')
 
 
 def build_swig(plat: str):
