@@ -5,7 +5,6 @@ import struct
 import sys
 import tarfile
 from enum import Enum
-from pathlib import Path
 
 # TODO copy improvements from config-cmdline.py then make config-cmdline refer to this
 
@@ -569,7 +568,7 @@ def extract(archive: str, output_path: str = None) -> None:
 
     .tar files can be .tar, .tar.gz or .tar.bz2.
     """
-    extension: str = Path(archive).suffix
+    filename, extension = os.path.splitext(archive)
 
     if output_path is None:
         output_path: str = os.getcwd()
