@@ -129,7 +129,7 @@ def download_depends():
         if plat == 'win32':
             # Download and extract Spice for Windows (32/64-bit)
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
-            os.system(f'curl -L {cspice_url} > cspice.zip')
+            download_file(cspice_url, 'cspice.zip')
             extract('cspice.zip')
             os.chdir(cspice_path)  # cspice_path: depends/cspice for now
             os.rename('cspice', cspice_dir)
