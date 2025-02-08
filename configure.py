@@ -144,10 +144,10 @@ def download_depends():
             os.remove('cspice.tar')
         print('CSPICE download complete!')
 
-    def download_swig(plat: str, swig_direc: str):
+    def download_swig(plat: str, swig_directory: str):
         # Download SWIG if it doesn't already exist
         # Check platform-appropriate path
-        if os.path.exists(swig_direc):
+        if os.path.exists(swig_directory):
             print('SWIG already downloaded')
             return
 
