@@ -595,7 +595,11 @@ def extract(archive: str, output_path: str = None) -> None:
         # os.system('tar -xf jdk.tar')
 
     else:
-        raise ValueError(extension, f'Archives with the "{extension}" extension cannot be extracted using extract().')
+        raise ValueError(f'Archives with the "{extension}" extension cannot be extracted using extract().\n'
+                         f'\nExtraction variables in extract():\n'
+                         f'\t- archive: "{archive}"\n'
+                         f'\t- extension: "{extension}"\n'
+                         f'\t- output_path: "{output_path}"\n')
 
 
 def download_file(url: str, save_name: str)->None:
