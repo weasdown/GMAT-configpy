@@ -357,10 +357,11 @@ def build_wxWidgets(plat: str):
         os.chdir(wx_path)
         try:
             os.chdir('build/msw')
-        except FileNotFoundError:
-            print(f'Current directory: {os.getcwd()}')
-            print(f'Items in directory: {os.listdir()}')
-            raise
+        except FileNotFoundError as e:
+            e.add_note(f'\n"{e.filename}" was not found while building wxWidgets.\n\n'
+                                    f'\t- Current working directory: {os.getcwd()}\n'
+                                    f'\t- Directory contents: {os.listdir()}')
+            raise e
 
         def wxwidgets_build_command(build_type):
             return (f'nmake -f makefile.vc OFFICIAL_BUILD=1 COMPILER_VERSION='
