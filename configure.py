@@ -233,7 +233,7 @@ def download_depends():
 def make_depend(dependency: str, install_type: str):
     dep_l = dependency.lower()  # convert name to lowercase
     install = 'install ' if install_type == 'install' else ''
-    j_cores = f' -j{NCORES}' if 'build' in install_type else ''
+    j_cores = f' -j{num_cores}' if 'build' in install_type else ''
     make_flag = os.system(f'make {install}{j_cores}> \
                             "{logs_path}/{dep_l}_{install_type}.log" 2>&1')
     if make_flag != 0:
@@ -658,9 +658,9 @@ if __name__ == '__main__':
     pcre_filename = f'pcre-{pcre_version}.tar.gz'
 
     # Get number of cores for multithreaded compilation
-    NCORES = str(os.cpu_count())
-    if NCORES == 'None':
-        NCORES = '1'
+    num_cores = str(os.cpu_count())
+    if num_cores == 'None':
+        num_cores = '1'
 
     download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
 
