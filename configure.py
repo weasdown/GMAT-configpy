@@ -684,17 +684,16 @@ if __name__ == '__main__':
             wx_ext = 'so'
 
     cspice_path = f'{cspice_path}/{PLATFORM_NAME}'
+    cspice_bit = '32'
     java_path = f'{java_path}/{PLATFORM_NAME}'
 
     if struct.calcsize("P") * 8 == 32:
         # TODO Fill with any lines that ask about CPU bit-ness
         wx_type = '_'
         wx_tgt_cpu = ''
-        cspice_bit = '32'
     else:  # assume 64-bit
         wx_type = '_x64_'
         wx_tgt_cpu = 'TARGET_CPU=X64'
-        cspice_bit = '32'
 
     # Set up dir/file names for downloaded files
     cspice_dir = f'cspice{cspice_bit}'
