@@ -1,9 +1,9 @@
 import os
-import sys
-import tarfile
-import struct
 import platform as mac_plat
 import shutil
+import struct
+import sys
+import tarfile
 from enum import Enum
 
 
