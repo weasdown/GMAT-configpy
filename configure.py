@@ -476,7 +476,7 @@ def build_cspice(plat: str):
 
             return
 
-    if plat == 'windows':
+    if plat == 'win32':
         cspice_win()
         return
 
