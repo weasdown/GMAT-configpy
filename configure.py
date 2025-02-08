@@ -99,11 +99,11 @@ def download_depends():
 
             # Download wxWidgets source
             print(f'\nDownloading wxWidgets {wx_version}...')
-            os.system(f'curl -L https://github.com/wxWidgets/wxWidgets/releases/download/'
-                      f'v{wx_version}/wxWidgets-{wx_version}.tar.bz2 > wxWidgets.tar.bz2')
-            with tarfile.open('wxWidgets.tar.bz2', 'r:bz2') as tar:
-                tar.extractall(filter='data')
-            os.remove('wxWidgets.tar.bz2')
+            wx_url: str = f'https://github.com/wxWidgets/wxWidgets/releases/download/v{wx_version}/wxWidgets-{wx_version}.tar.bz2'
+            wx_save_file: str = 'wxWidgets.tar.bz2'
+            download_file(wx_url, wx_save_file)
+            extract(wx_save_file)
+            os.remove(wx_save_file)
 
             # Make sure wxWidgets was downloaded
             if not os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
