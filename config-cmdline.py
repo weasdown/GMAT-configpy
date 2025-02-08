@@ -726,7 +726,7 @@ def py_ver_prompt():
                  'for multiple versions. You can also specify "All" to build all allowed versions '
                  f'({min_ver}-{max_ver}) [All]\n')
 
-    if vers == '':  # use default option - All versions
+    if vers == '' or vers == 'All':  # use default option - All versions
         vers = ','.join([f'{major_ver}.{minor}' for minor in range(minor_ver_min, minor_ver_max + 1)])
     else:
         vers = str(vers)
