@@ -101,6 +101,10 @@ def download_depends():
             if not os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
                 raise RuntimeError(f'Error in wxWidgets-{wx_version} download.')
 
+        else:
+            print('wxWidgets already downloaded')
+            return
+
     def download_cspice(plat: str):
         # Download CSPICE if it doesn't already exist
         if os.path.exists(cspice_path):
