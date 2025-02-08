@@ -564,8 +564,12 @@ def build_swig(plat: str):
 
 def unzip(path_to_zip: str, output_path: str = None) -> None:
     """Unzips a .zip file in a given directory to the current directory, or to a given output directory if specified."""
-    output_arg: str = '' if output_path is None else f'-o "{output_path}"'
-    os.system(f'"{depends_path}/bin/7za/7za.exe" x {path_to_zip} {output_arg} -r > nul')
+    output_arg: str = '' if output_path is None else f'o "{output_path}"'
+    if sys.platform =='win32':  # TODO use Platform enum
+        seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
+    else:
+        raise NotImplementedError(f'Unzipping for platform "{sys.platform}" is not yet supported')
+    os.system(f'{seven_zip_exe} x {path_to_zip} {output_arg} > nul')
 
 
 def extract_tar(path_to_tar:str)->None:
