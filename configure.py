@@ -452,12 +452,13 @@ def build_cspice(plat: str):
 
             try:
                 os.chdir(f'{cspice_path}/{cspice_dir}/src/cspice')
-            except FileNotFoundError:
-                print(f'build_cspice: Failed to switch to {cspice_path}/windows/cspice/src/cspice')
-                print(f'cspice_path: {cspice_path}')
-                print(f'Current working directory: {os.getcwd()}')
-                print(f'Directory contents: {os.listdir()}')
-                raise
+
+            except FileNotFoundError as e:
+                e.add_note(f'\nbuild_cspice() failed to switch to {cspice_path}/windows/cspice/src/cspice.\n\n'
+                           f'\t- cspice_path: {cspice_path}\n'
+                           f'\t- Current working directory: {os.getcwd()}\n'
+                           f'\t- Directory contents: {os.listdir()}')
+                raise e
 
             def compile_cspice(build_type):
                 print(f'-- Compiling {build_type} CSPICE. This could take a while...')
