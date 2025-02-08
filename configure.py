@@ -520,6 +520,8 @@ def build_cspice(plat: str):
         if make_flag != 0:
             print('CSPICE release build failed. Fix errors and try again.')
 
+    print('-- CSPICE build complete!\n')
+
 
 def build_swig(plat: str):
     # Windows is pre-built
