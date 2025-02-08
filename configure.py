@@ -123,11 +123,12 @@ def download_depends():
         print(f'\nDownloading {cspice_bit}-bit CSPICE {cspice_version}...')
         if plat == 'win32':
             # Download and extract Spice for Windows (32/64-bit)
-            os.system(f'curl -L http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}\
-                    /C/PC_Windows_VisualC_{cspice_bit}/packages/cspice.zip > cspice.zip')
-            os.system(f'"{depends_path}/bin/7za/7za.exe" x cspice.zip > nul')
+            cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
+            os.system(f'curl -L {cspice_url} > cspice.zip')
+            unzip('cspice.zip')
             os.chdir(cspice_path)  # cspice_path: depends/cspice for now
             os.rename('cspice', cspice_dir)
+            os.remove('cspice.zip')
 
         else:  # Platform is not Windows
             # Download and extract Spice for Mac/Linux (32/64-bit)
@@ -555,6 +556,12 @@ def unzip(path_to_zip: str, output_path: str = None) -> None:
     """Unzips a .zip file in a given directory to the current directory, or to a given output directory if specified."""
     output_arg: str = f'-o "{output_path}"' if output_path is not None else ''
     os.system(f'"{depends_path}/bin/7za/7za.exe" x {path_to_zip} {output_arg} -r > nul')
+
+
+def extract_tar(path_to_tar:str)->None:
+    # TODO handle .tar.gz and .tar
+    os.system('gzip -d jdk.tar.gz')
+    os.system('tar -xf jdk.tar')
 
 
 cspice_version = 'N0067'
