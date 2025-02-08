@@ -142,7 +142,7 @@ def download_depends():
             os.system('tar -xf cspice.tar')
             os.system(f'mv cspice cspice_dir')
             os.remove('cspice.tar')
-        print('CSPICE download complete!')
+        print('CSPICE download complete!\n')
 
     def download_swig(plat: str):
         # Download SWIG if it doesn't already exist
