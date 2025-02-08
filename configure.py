@@ -6,6 +6,7 @@ import sys
 import tarfile
 from enum import Enum
 
+# TODO copy improvements from config-cmdline.py then make config-cmdline refer to this
 
 # Load the Visual Studio path settings
 def setup_windows():
