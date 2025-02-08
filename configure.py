@@ -4,6 +4,7 @@ import tarfile
 import struct
 import platform as mac_plat
 import shutil
+from enum import Enum
 
 
 # Load the Visual Studio path settings
@@ -592,6 +593,13 @@ wxWidgets_path = f'{depends_path}/wxWidgets'
 xerces_path = f'{depends_path}/xerces'
 sofa_path = f'{depends_path}/sofa'
 tsplot_path = f'{depends_path}/tsPlot'
+
+
+# TODO use to set PLATFORM_NAME
+class Platform(Enum):
+    Windows = 'windows'
+    macOS = 'macosx'
+    Linux = 'linux'
 
 
 if __name__ == '__main__':
