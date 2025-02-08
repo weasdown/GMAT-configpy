@@ -345,14 +345,17 @@ def build_wxWidgets(plat: str):
     # Windows-specific build
     if plat == 'win32':
         wx_path = f'{wxWidgets_path}/{wx_version_folder}/{wx_version_folder}'
-        os.chdir(depends_path)  # switch back to depends so later relative directory changes work
 
-        if os.path.exists(f'{wx_path}/lib/vc{vc_major_version}{vc_minor_version}{wx_type}dll'):
+        dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'
+        dll_folder_final: str = dll_folder_initial.replace(wx_type, '')
+
+        if os.path.exists(f'{wx_path}/lib/{dll_folder_final}'):
             print('-- wxWidgets already configured')
             return
 
         if not os.path.exists(wx_path):
             raise FileNotFoundError(wx_path, f'Could not find folder "{wx_version_folder}" to build wxWidgets.')
+
         os.chdir(wx_path)
         try:
             os.chdir('build/msw')
@@ -373,17 +376,14 @@ def build_wxWidgets(plat: str):
         print('-- Compiling release wxWidgets. This could take a while...')
         os.system(wxwidgets_build_command('release'))
 
-        os.chdir('../..')  # TODO change to variable path (e.g. wx_path)
+        os.chdir(f'{wx_path}/lib')
 
-        os.chdir('lib')
-        os.rename(f'vc{vc_major_version}{vc_minor_version}{wx_type}.dll', f'vc{wx_type}.dll')
-
-        os.chdir(depends_path)
+        os.rename(dll_folder_initial, dll_folder_final)
 
         # Once the build has finished, vc_x64_dll needs to be copied into gmat/application/debug
         #  to enable Windows debug build. (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
-        dll_name = 'wxmsw30ud_core_vc141_x64.dll'
-        dll_source = f'{wxWidgets_path}/wxWidgets-{wx_version}/lib/vc_x64_dll/{dll_name}'
+        dll_name = f'wxmsw30ud_core_vc{vc_major_version}{vc_minor_version}_x64.dll'
+        dll_source = f'{wx_path}/lib/{dll_folder_final}/{dll_name}'
         dll_destination = f'{gmat_path}/application/debug/{dll_name}'
         shutil.copyfile(dll_source, dll_destination)
 
