@@ -634,7 +634,7 @@ logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
 # Create path variables
 bin_path = f'{depends_path}/bin'
 f2c_path = f'{depends_path}/f2c'
-cspice_path = f'{depends_path}/cspice'
+cspice_path: str  # cspice_path is defined per platform below
 swig_path = f'{depends_path}/swig'
 java_path = f'{depends_path}/java'
 wxWidgets_path = f'{depends_path}/wxWidgets'
@@ -683,7 +683,7 @@ if __name__ == '__main__':
             swig_platform_name = 'linux'
             wx_ext = 'so'
 
-    cspice_path = f'{cspice_path}/{PLATFORM_NAME}'
+    cspice_path = f'{depends_path}/cspice/{PLATFORM_NAME}'
     cspice_bit = '32'
     java_path = f'{java_path}/{PLATFORM_NAME}'
 
