@@ -572,7 +572,10 @@ def extract(archive: str, output_path: str = None) -> None:
     """
     extension: str = Path(archive).suffix
 
-    output_arg: str = '' if output_path is None else f'o "{output_path}"'
+    if output_path is None:
+        output_path: str = os.getcwd()
+
+    output_arg: str = f'o "{output_path}"'
 
     if sys.platform =='win32':  # TODO use Platform enum
         seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
