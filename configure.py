@@ -436,6 +436,7 @@ def build_wxWidgets(plat: str):
         os.chdir('..')
         os.system(f'rm -Rf "{wx_build_path}"')
 
+    print('-- wxWidgets build complete!\n')
 
 def build_cspice(plat: str):
     print('\n********** Configuring CSPICE **********')
