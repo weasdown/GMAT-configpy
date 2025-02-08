@@ -373,7 +373,7 @@ def build_wxWidgets(plat: str):
         print('-- Compiling release wxWidgets. This could take a while...')
         os.system(wxwidgets_build_command('release'))
 
-        os.chdir('../..')
+        os.chdir('../..')  # TODO change to variable path (e.g. wx_path)
 
         os.chdir('lib')
         os.rename(f'vc{vc_major_version}{vc_minor_version}{wx_type}.dll', f'vc{wx_type}.dll')
