@@ -351,7 +351,8 @@ def build_wxWidgets(plat: str):
             print('-- wxWidgets already configured')
             return
 
-        os.makedirs(wx_path, exist_ok=True)
+        if not os.path.exists(wx_path):
+            raise FileNotFoundError(wx_path, f'Could not find folder "{wx_version_folder}" to build wxWidgets.')
         os.chdir(wx_path)
         try:
             os.chdir('build/msw')
