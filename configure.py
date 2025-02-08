@@ -55,7 +55,7 @@ def setup_windows():
     # Add CMake to path
     sys.path.append('C:/Program Files/CMake/bin')
 
-    print("\nWindows setup complete\n")
+    print("\nWindows initial setup complete\n")
 
 
 def download_depends():
