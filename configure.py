@@ -547,6 +547,10 @@ def build_swig(plat: str):
     os.system(f'rm -Rf {swig_build_path}')
 
 
+def unzip(path_to_zip: str) -> None:
+    os.system(f'"{depends_path}/bin/7za/7za.exe" x {path_to_zip} > nul')
+
+
 cspice_version = 'N0067'
 swig_version = '4.0.2'
 pcre_version = '8.45'
