@@ -5,6 +5,7 @@ import struct
 import sys
 import tarfile
 from enum import Enum
+from pathlib import Path
 
 # TODO copy improvements from config-cmdline.py then make config-cmdline refer to this
 
@@ -129,7 +130,7 @@ def download_depends():
             # Download and extract Spice for Windows (32/64-bit)
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
             os.system(f'curl -L {cspice_url} > cspice.zip')
-            unzip('cspice.zip')
+            extract('cspice.zip')
             os.chdir(cspice_path)  # cspice_path: depends/cspice for now
             os.rename('cspice', cspice_dir)
             os.remove('cspice.zip')
@@ -161,7 +162,7 @@ def download_depends():
         if plat == 'win32':
             # Download and extract SWIG for Windows
             download_file(f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip', 'swig.zip')
-            unzip('swig.zip')
+            extract('swig.zip')
             os.rename(f'swigwin-{swig_version}', 'swigwin')
             os.remove('swig.zip')
         else:
@@ -211,7 +212,7 @@ def download_depends():
             download_file(java_url, downloaded_file)
 
             # Extract the downloaded zip to a folder with the full version number as its name
-            unzip(downloaded_file, f'jdk-{java_full_version}')
+            extract(downloaded_file, f'jdk-{java_full_version}')
             os.rename(f'jdk-{java_full_version}', 'jdk')
             os.remove(downloaded_file)
 
@@ -560,20 +561,35 @@ def build_swig(plat: str):
     os.system(f'rm -Rf {swig_build_path}')
 
 
-def unzip(path_to_zip: str, output_path: str = None) -> None:
-    """Unzips a .zip file in a given directory to the current directory, or to a given output directory if specified."""
+def extract(archive: str, output_path: str = None) -> None:
+    """
+    Unzips a .zip or .tar file in a given directory to the current directory, or to a given output directory if specified.
+
+    .tar files can be .tar, .tar.gz or .tar.bz2.
+    """
+    extension: str = Path('my_file.txt').suffix
+
     output_arg: str = '' if output_path is None else f'o "{output_path}"'
+
     if sys.platform =='win32':  # TODO use Platform enum
         seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
     else:
         raise NotImplementedError(f'Unzipping for platform "{sys.platform}" is not yet supported')
-    os.system(f'{seven_zip_exe} x {path_to_zip} {output_arg} > nul')
 
+    if extension == '.zip':
+        os.system(f'{seven_zip_exe} x {archive} {output_arg} > nul')
 
-def extract_tar(path_to_tar:str)->None:
-    # TODO handle .tar.gz and .tar
-    os.system('gzip -d jdk.tar.gz')
-    os.system('tar -xf jdk.tar')
+    elif extension == '.tar.bz2':
+        with tarfile.open(archive, 'r:bz2') as tar:
+            tar.extractall(filter='data', path=output_path if output_path is not None else '.')
+
+    elif extension == 'tar.gz':
+        raise NotImplementedError
+        # os.system('gzip -d jdk.tar.gz')
+        # os.system('tar -xf jdk.tar')
+
+    else:
+        raise ValueError(extension, f'Archives with the "{extension}" extension cannot be extracted using extract().')
 
 
 def download_file(url: str, save_name: str)->None:
