@@ -130,6 +130,7 @@ def download_depends():
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
             download_file(cspice_url, 'cspice.zip')
             extract('cspice.zip')
+            sys.exit(0)  # TODO remove
             os.rename('cspice', cspice_dir)
             os.remove('cspice.zip')
 
@@ -580,9 +581,7 @@ def extract(archive: str, output_path: str = None) -> None:
     filename, extension = os.path.splitext(archive)
 
     if output_path is None:
-        output_path: str = os.getcwd()
-
-    output_arg: str = f'o "{output_path}"'
+        output_path: str = filename  # e.g. cspice.zip extracts to a folder called cspice
 
     if sys.platform =='win32':  # TODO use Platform enum
         seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
@@ -590,7 +589,7 @@ def extract(archive: str, output_path: str = None) -> None:
         raise NotImplementedError(f'Unzipping for platform "{sys.platform}" is not yet supported')
 
     if extension == '.zip':
-        os.system(f'{seven_zip_exe} x {archive} {output_arg} > nul')
+        os.system(f'{seven_zip_exe} x {archive} -r -o"{output_path}" > nul')
 
     elif extension == '.bz2':
         with tarfile.open(archive, 'r:bz2') as tar:
@@ -703,8 +702,6 @@ if __name__ == '__main__':
         num_cores = '1'
 
     download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
-
-    sys.exit(0)  # TODO remove
 
     # Build the dependencies using CMake
     build_xerces(sys_plat)
