@@ -547,34 +547,34 @@ def build_swig(plat: str):
     os.system(f'rm -Rf {swig_build_path}')
 
 
-# cspice_version = 'N0067'
-# swig_version = '4.0.2'
-# pcre_version = '8.45'
-# java_version = '11.0.5'
-# java_update = '10'
-# wx_version = '3.0.4'
-# xerces_version = '3.2.2'
-# osx_min_version = '10.15'
-# osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
-# vs_version = 2022
-# vs_major_version = '17'
-# vc_major_version = '14'
-# vc_minor_version = '1'
-#
-# gmat_path = os.path.dirname(os.getcwd())  # Path to gmat folder
-# depends_path = str(f'{gmat_path}/depends')  # Path to depends folder
-# logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
-#
-# # Create path variables
-# bin_path = f'{depends_path}/bin'
-# f2c_path = f'{depends_path}/f2c'
-# cspice_path = f'{depends_path}/cspice'
-# swig_path = f'{depends_path}/swig'
-# java_path = f'{depends_path}/java'
-# wxWidgets_path = f'{depends_path}/wxWidgets'
-# xerces_path = f'{depends_path}/xerces'
-# sofa_path = f'{depends_path}/sofa'
-# tsplot_path = f'{depends_path}/tsPlot'
+cspice_version = 'N0067'
+swig_version = '4.0.2'
+pcre_version = '8.45'
+java_version = '11.0.5'
+java_update = '10'
+wx_version = '3.0.4'
+xerces_version = '3.2.2'
+osx_min_version = '10.15'
+osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
+vs_version = 2022
+vs_major_version = '17'
+vc_major_version = '14'
+vc_minor_version = '1'
+
+gmat_path = os.path.dirname(os.getcwd())  # Path to gmat folder
+depends_path = str(f'{gmat_path}/depends')  # Path to depends folder
+logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
+
+# Create path variables
+bin_path = f'{depends_path}/bin'
+f2c_path = f'{depends_path}/f2c'
+cspice_path = f'{depends_path}/cspice'
+swig_path = f'{depends_path}/swig'
+java_path = f'{depends_path}/java'
+wxWidgets_path = f'{depends_path}/wxWidgets'
+xerces_path = f'{depends_path}/xerces'
+sofa_path = f'{depends_path}/sofa'
+tsplot_path = f'{depends_path}/tsPlot'
 
 
 if __name__ == '__main__':
