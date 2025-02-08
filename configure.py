@@ -82,10 +82,15 @@ def download_depends():
         xerces_version_folder = f'xerces-c-{xerces_version}'
         xerces_folder_simple = os.path.basename(os.path.normpath(xerces_path))
         os.rename(xerces_version_folder, xerces_folder_simple)
+        print('Xerces download complete!')
 
     def download_wxwidgets():
+        if os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
+            print('wxWidgets already downloaded')
+            return
+
         # Download wxWidgets if it doesn't already exist
-        if not os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
+        else:
             # Create & change directories
             if not os.path.exists(wxWidgets_path):
                 os.mkdir(wxWidgets_path)
@@ -102,10 +107,7 @@ def download_depends():
             # Make sure wxWidgets was downloaded
             if not os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
                 raise RuntimeError(f'Error in wxWidgets-{wx_version} download.')
-
-        else:
-            print('wxWidgets already downloaded')
-            return
+            print('wxWidgets download complete!')
 
     def download_cspice(plat: str):
         # Download CSPICE if it doesn't already exist
@@ -140,6 +142,7 @@ def download_depends():
             os.system('tar -xf cspice.tar')
             os.system(f'mv cspice cspice_dir')
             os.remove('cspice.tar')
+        print('CSPICE download complete!')
 
     def download_swig(plat: str, swig_direc: str):
         # Download SWIG if it doesn't already exist
@@ -175,6 +178,7 @@ def download_depends():
             pcre_url: str = f'https://sourceforge.net/projects/pcre/files/pcre/{pcre_version}/{pcre_filename}/download'
             download_file(pcre_url, pcre_filename)
 
+        print('SWIG download complete!')
 
     def download_java():
         # Download Java if it doesn't already exist
@@ -220,6 +224,7 @@ def download_depends():
             os.system('tar -xf jdk.tar')
             os.system(f'mv jdk-{java_full_version} jdk')
             os.remove('jdk.tar')
+        print('Java download complete!')
 
     download_xerces()
     download_wxwidgets()
