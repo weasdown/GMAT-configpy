@@ -570,7 +570,7 @@ def extract(archive: str, output_path: str = None) -> None:
 
     .tar files can be .tar, .tar.gz or .tar.bz2.
     """
-    extension: str = Path('my_file.txt').suffix
+    extension: str = Path(archive).suffix
 
     output_arg: str = '' if output_path is None else f'o "{output_path}"'
 
