@@ -585,7 +585,7 @@ def extract(archive: str, output_path: str = None) -> None:
     if extension == '.zip':
         os.system(f'{seven_zip_exe} x {archive} {output_arg} > nul')
 
-    elif extension == '.tar.bz2':
+    elif extension == '.bz2':
         with tarfile.open(archive, 'r:bz2') as tar:
             tar.extractall(filter='data', path=output_path if output_path is not None else '.')
 
