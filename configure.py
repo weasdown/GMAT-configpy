@@ -345,7 +345,7 @@ def build_wxWidgets(plat: str):
     # Windows-specific build
     if plat == 'win32':
         # Generate filenames to download
-        wx_path = f'wxWidgets/wxWidgets-{wx_version}'
+        wx_path = f'{wxWidgets_path}/{wx_version_folder}/{wx_version_folder}'
         os.chdir(depends_path)  # switch back to depends so later relative directory changes work
 
         # Download wxWidgets files if they don't already exist
@@ -617,6 +617,7 @@ pcre_version = '8.45'
 java_version = '11.0.5'
 java_update = '10'
 wx_version = '3.0.4'
+wx_version_folder = f'wxWidgets-{wx_version}'
 xerces_version = '3.2.2'
 osx_min_version = '10.15'
 osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
@@ -701,7 +702,6 @@ if __name__ == '__main__':
         num_cores = '1'
 
     download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
-    sys.exit(0)  # TODO remove
 
     # Build the dependencies using CMake
     build_xerces(sys_plat)
