@@ -194,6 +194,7 @@ def download_depends():
         java_major_version = java_version.split('.')[0]
         java_full_version = f'{java_version}+{java_update}'
 
+        # TODO use Platform enum
         if sys.platform == 'darwin':
             java_os_name = 'mac'
         elif sys.platform == 'win32':
