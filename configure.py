@@ -101,12 +101,13 @@ def download_depends():
             wx_url: str = f'https://github.com/wxWidgets/wxWidgets/releases/download/v{wx_version}/wxWidgets-{wx_version}.tar.bz2'
             wx_save_file: str = 'wxWidgets.tar.bz2'
             download_file(wx_url, wx_save_file)
-            extract(wx_save_file)
+            extract(wx_save_file, f'wxWidgets-{wx_version}')
             os.remove(wx_save_file)
 
             # Make sure wxWidgets was downloaded
             if not os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
                 raise RuntimeError(f'Error in wxWidgets-{wx_version} download.')
+
             print('wxWidgets download complete!')
 
     def download_cspice(plat: str):
@@ -130,7 +131,6 @@ def download_depends():
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
             download_file(cspice_url, 'cspice.zip')
             extract('cspice.zip')
-            sys.exit(0)  # TODO remove
             os.rename('cspice', cspice_dir)
             os.remove('cspice.zip')
 
@@ -702,6 +702,7 @@ if __name__ == '__main__':
         num_cores = '1'
 
     download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
+    sys.exit(0)  # TODO remove
 
     # Build the dependencies using CMake
     build_xerces(sys_plat)
