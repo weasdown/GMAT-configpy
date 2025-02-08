@@ -589,7 +589,7 @@ def extract(archive: str, output_path: str = None) -> None:
         with tarfile.open(archive, 'r:bz2') as tar:
             tar.extractall(filter='data', path=output_path if output_path is not None else '.')
 
-    elif extension == 'tar.gz':
+    elif extension == '.gz':
         raise NotImplementedError
         # os.system('gzip -d jdk.tar.gz')
         # os.system('tar -xf jdk.tar')
