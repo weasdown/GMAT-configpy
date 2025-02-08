@@ -596,7 +596,7 @@ def extract(archive: str, output_path: str = None) -> None:
 
     elif extension == '.bz2':
         with tarfile.open(archive, 'r:bz2') as tar:
-            tar.extractall(filter='data', path=f'./{output_path}' if output_path is not None else '.')
+            tar.extractall(filter='data', path=output_path if output_path is not None else '.')
 
     elif extension == '.gz':
         raise NotImplementedError
