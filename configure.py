@@ -346,8 +346,8 @@ def build_wxWidgets(plat: str):
     if plat == 'win32':
         wx_path = f'{wxWidgets_path}/{wx_version_folder}'
 
-        dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'
-        dll_folder_final: str = dll_folder_initial.replace(wx_type, '')
+        dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'  # vc141_x64_dll
+        dll_folder_final: str = dll_folder_initial.replace(wx_type, '')  # vc141dll
 
         if os.path.exists(f'{wx_path}/lib/{dll_folder_final}'):
             print('-- wxWidgets already configured')
