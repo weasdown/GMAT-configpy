@@ -196,10 +196,9 @@ def download_depends():
         java_major_version = java_version.split('.')[0]
         java_full_version = f'{java_version}+{java_update}'
 
-        # TODO use Platform enum
-        if sys.platform == 'darwin':
+        if platform == Platform.macOS:
             java_os_name = 'mac'
-        elif sys.platform == 'win32':
+        elif platform == Platform.Windows:
             java_os_name = 'windows'
         else:
             java_os_name = 'linux'
@@ -210,7 +209,8 @@ def download_depends():
         downloaded_file: str = f'jdk.{extension}'
 
         print(f'\nDownloading Java JDK {java_full_version}...')
-        if sys.platform == 'win32':
+        # Windows download
+        if platform == Platform.Windows:
             # Download and extract AdoptOpenJDK for Windows
             download_file(java_url, downloaded_file)
 
@@ -219,6 +219,7 @@ def download_depends():
             os.rename(f'jdk-{java_full_version}', 'jdk')
             os.remove(downloaded_file)
 
+        # macOS or Linux download
         else:
             # Download and extract AdoptOpenJDK for Mac/Linux
             download_file(f'{java_url}.tar.gz', 'jdk.tar.gz')
@@ -312,7 +313,7 @@ def build_xerces():
     os.system('chmod u+x ../config/*')
 
     # Xerces needs flags on OSX
-    macos_flags = '' if sys.platform != 'darwin' else \
+    macos_flags = '' if platform != Platform.macOS else \
         f'-mmacosx-version-min={osx_min_version} --sysroot={osx_sdk}'
 
     common_xerces_flags = ('--disable-shared --disable-netaccessor-curl'
@@ -494,12 +495,7 @@ def build_cspice():
         tk_compile_arch = f'-m{cspice_bit}'
         os.system(f'export TKCOMPILEARCH="{tk_compile_arch}"')
 
-        flags = '' if sys.platform != 'darwin' else f'-mmacosx-version-min={osx_min_version} -Wno-error=implicit-function-declaration --sysroot={osx_sdk}'
-
-        # if sys.platform == 'darwin':  # macOS
-        #     macos_flags = f'-mmacosx-version-min={osx_min_version} -Wno-error=implicit-function-declaration --sysroot={osx_sdk}'
-        # else:
-        #     macos_flags = ''
+        flags = '' if platform != Platform.macOS else f'-mmacosx-version-min={osx_min_version} -Wno-error=implicit-function-declaration --sysroot={osx_sdk}'
 
         cspice_test_file = f'{spice_path}/lib/cspiced.a'
 
@@ -593,10 +589,11 @@ def extract(archive: str, output_path: str = None) -> None:
     """
     filename, extension = os.path.splitext(archive)
 
-    if sys.platform == 'win32':  # TODO use Platform enum
+    if platform == Platform.Windows:
         seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
+    # macOS or Linux extraction
     else:
-        raise NotImplementedError(f'Unzipping for platform "{sys.platform}" is not yet supported')
+        raise NotImplementedError(f'Unzipping for platform "{platform.name}" is not yet supported')
 
     if extension == '.zip':
         output_path_arg: str = '' if output_path is None else f'-o"./{output_path}" '
