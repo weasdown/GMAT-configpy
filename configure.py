@@ -449,40 +449,39 @@ def build_wxWidgets():
 def build_cspice():
     print('\n********** Configuring CSPICE **********')
 
-    def cspice_win():
-        # Windows-specific build
-        if sys.platform == 'win32':
-            # Build CSPICE if cspiced.lib does not already exist
-            if os.path.exists(f'{cspice_path}/{cspice_dir}/lib/cspiced.lib'):
-                print('-- CSPICE already configured')
-                return
-
-            try:
-                os.chdir(f'{cspice_path}/{cspice_dir}/src/cspice')
-
-            except FileNotFoundError as e:
-                e.add_note(f'\nbuild_cspice() failed to switch to {cspice_path}/windows/cspice/src/cspice.\n\n'
-                           f'\t- cspice_path: {cspice_path}\n'
-                           f'\t- Current working directory: {os.getcwd()}\n'
-                           f'\t- Directory contents: {os.listdir()}')
-                raise e
-
-            def compile_cspice(build_type):
-                print(f'-- Compiling {build_type} CSPICE. This could take a while...')
-                os.system(f'cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS'
-                          f' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
-                          f' "{logs_path}\\cspice_build_{build_type}.log" 2>&1')
-                os.system(f'link -lib /out:..\\..\\lib\\cspiced.lib *.obj >> '
-                          f'"{logs_path}\\cspice_build_{build_type}.log" 2>&1')
-
-                os.system('del *.obj')
-
-            compile_cspice('debug')
-            compile_cspice('release')
-
-            os.chdir(depends_path)
-
+    def cspice_win() -> None:
+        """Windows-specific build of CSPICE."""
+        # Build CSPICE if cspiced.lib does not already exist
+        if os.path.exists(f'{cspice_path}/{cspice_dir}/lib/cspiced.lib'):
+            print('-- CSPICE already configured')
             return
+
+        try:
+            os.chdir(f'{cspice_path}/{cspice_dir}/src/cspice')
+
+        except FileNotFoundError as e:
+            e.add_note(f'\nbuild_cspice() failed to switch to {cspice_path}/windows/cspice/src/cspice.\n\n'
+                       f'\t- cspice_path: {cspice_path}\n'
+                       f'\t- Current working directory: {os.getcwd()}\n'
+                       f'\t- Directory contents: {os.listdir()}')
+            raise e
+
+        def compile_cspice(build_type):
+            print(f'-- Compiling {build_type} CSPICE. This could take a while...')
+            os.system(f'cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS'
+                      f' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
+                      f' "{logs_path}\\cspice_build_{build_type}.log" 2>&1')
+            os.system(f'link -lib /out:..\\..\\lib\\cspiced.lib *.obj >> '
+                      f'"{logs_path}\\cspice_build_{build_type}.log" 2>&1')
+
+            os.system('del *.obj')
+
+        compile_cspice('debug')
+        compile_cspice('release')
+
+        os.chdir(depends_path)
+
+        return
 
     if platform == Platform.Windows:
         cspice_win()
