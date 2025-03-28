@@ -6,6 +6,7 @@ import sys
 import tarfile
 from enum import Enum
 
+
 # TODO copy improvements from config-cmdline.py then make config-cmdline refer to this
 
 # Load the Visual Studio path settings
@@ -201,9 +202,9 @@ def download_depends():
             java_os_name = 'linux'
 
         java_base_url = f'https://github.com/AdoptOpenJDK/openjdk{java_major_version}-binaries/releases/download/jdk-{java_full_version}'
-        extension: str = 'zip' if platform == Platform.Windows else 'tar.gz'  # TODO use Platform enum
+        extension: str = 'zip' if platform == Platform.Windows else 'tar.gz'
         java_url = f'{java_base_url}/OpenJDK{java_major_version}U-jdk_x64_{java_os_name}_hotspot_{java_version}_{java_update}.{extension}'
-        downloaded_file:str = f'jdk.{extension}'
+        downloaded_file: str = f'jdk.{extension}'
 
         print(f'\nDownloading Java JDK {java_full_version}...')
         if sys.platform == 'win32':
@@ -310,7 +311,7 @@ def build_xerces(plat: str):
         f'-mmacosx-version-min={osx_min_version} --sysroot={osx_sdk}'
 
     common_xerces_flags = ('--disable-shared --disable-netaccessor-curl'
-                            ' --disable-transcoder-icu --disable-msgloader-icu')
+                           ' --disable-transcoder-icu --disable-msgloader-icu')
 
     print(f'Configuring Xerces {xerces_version} debug library. This could take a while...')
     common_c_flags = f'-O0 -g -fPIC {macos_flags}'
@@ -322,7 +323,7 @@ def build_xerces(plat: str):
     make_depend('xerces', 'install_debug')
 
     os.rename(f'{xerces_install_path}/lib/libxerces-c.a',
-                f'{xerces_install_path}/lib/libxerces-cd.a')
+              f'{xerces_install_path}/lib/libxerces-cd.a')
     os.system('make clean > /dev/null 2>&1')
 
     print(f'Configuring Xerces {xerces_version} release library. This could take a while...')
@@ -612,7 +613,7 @@ def extract(archive: str, output_path: str = None) -> None:
                          f'\t- output_path: "{output_path}"\n')
 
 
-def download_file(url: str, save_name: str)->None:
+def download_file(url: str, save_name: str) -> None:
     os.system(f'curl -L {url} > {save_name}')
 
 
