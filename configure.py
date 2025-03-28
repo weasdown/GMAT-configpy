@@ -10,7 +10,7 @@ from enum import Enum
 
 # Load the Visual Studio path settings
 def setup_windows():
-    # 64-bit; change to x86 for 32-bit
+    # 64-bit; change to x86 for 32-bit # TODO set vs_arch based on architecture bits
     vs_arch = 'x86_amd64'
     vs_tools = f'vs{vc_major_version}0comntools'
     if vs_version >= 2017:
@@ -59,9 +59,8 @@ def setup_windows():
 
 
 def download_depends():
-    """
-    Download GMAT dependencies.
-    """
+    """Download GMAT dependencies."""
+
     def download_xerces():
         # Download xerces if it doesn't already exist
         if os.path.exists(xerces_path):
@@ -587,7 +586,7 @@ def extract(archive: str, output_path: str = None) -> None:
     """
     filename, extension = os.path.splitext(archive)
 
-    if sys.platform =='win32':  # TODO use Platform enum
+    if sys.platform == 'win32':  # TODO use Platform enum
         seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
     else:
         raise NotImplementedError(f'Unzipping for platform "{sys.platform}" is not yet supported')
@@ -622,7 +621,7 @@ swig_version = '4.0.2'  # 4.2 is required for full Python 3.12 support as per ht
 pcre_version = '8.45'
 java_version = '11.0.5'
 java_update = '10'
-wx_version = '3.0.4'
+wx_version = '3.0.4'  # 3.2.6 is being implemented for R2025a but has several critical issues.
 wx_version_folder = f'wxWidgets-{wx_version}'
 xerces_version = '3.2.2'
 osx_min_version = '10.15'
