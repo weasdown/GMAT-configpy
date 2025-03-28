@@ -388,12 +388,26 @@ def build_wxWidgets():
         if not os.path.exists(dll_folder_final):
             os.rename(dll_folder_initial, dll_folder_final)
 
-        # Once the build has finished, vc_x64_dll needs to be copied into gmat/application/debug
-        #  to enable Windows debug build. (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
-        dll_name = f'wxmsw30ud_core_vc{vc_major_version}{vc_minor_version}_x64.dll'
-        dll_source = f'{wx_path}/lib/{dll_folder_final}/{dll_name}'
-        dll_destination = f'{gmat_path}/application/debug/{dll_name}'
-        shutil.copyfile(dll_source, dll_destination)
+        # Once the build has finished, some DLLs need to be copied into gmat/application/bin and gmat/application/debug
+        #  to enable the .exe to run once built. (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
+        def copy_dlls(debug: bool = False):
+            dll_source: str = f'{wx_path}/lib/{dll_folder_final}'
+            dll_destination: str = f'{gmat_path}/application/{"debug" if debug else "bin"}'
+            required_dlls: list[str] = [
+                f'wxbase30u{"d" if debug else ""}_vc{vc_major_version}{vc_minor_version}_x64.dll',
+                f'wxmsw30u{"d" if debug else ""}_core_vc{vc_major_version}{vc_minor_version}_x64.dll',
+                f'wxmsw30u{"d" if debug else ""}_adv_vc{vc_major_version}{vc_minor_version}_x64.dll',
+                f'wxmsw30u{"d" if debug else ""}_stc_vc{vc_major_version}{vc_minor_version}_x64.dll',
+                f'wxmsw30u{"d" if debug else ""}_gl_vc{vc_major_version}{vc_minor_version}_x64.dll']
+
+            print(f'-- Copying {"non-" if not debug else ""}debug DLLs')
+            for dll in required_dlls:
+                source_file: str = f'{dll_source}/{dll}'
+                destination_file: str = f'{dll_destination}/{dll}'
+                shutil.copyfile(source_file, destination_file)
+
+        copy_dlls(debug=False)
+        copy_dlls(debug=True)
 
     # macOS or Linux build
     else:
