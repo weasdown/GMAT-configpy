@@ -201,7 +201,7 @@ def download_depends():
             java_os_name = 'linux'
 
         java_base_url = f'https://github.com/AdoptOpenJDK/openjdk{java_major_version}-binaries/releases/download/jdk-{java_full_version}'
-        extension: str = 'zip' if sys.platform == 'win32' else 'tar.gz' # TODO use Platform enum
+        extension: str = 'zip' if platform == Platform.Windows else 'tar.gz'  # TODO use Platform enum
         java_url = f'{java_base_url}/OpenJDK{java_major_version}U-jdk_x64_{java_os_name}_hotspot_{java_version}_{java_update}.{extension}'
         downloaded_file:str = f'jdk.{extension}'
 
