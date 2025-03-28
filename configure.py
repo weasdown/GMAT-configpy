@@ -385,7 +385,8 @@ def build_wxWidgets():
 
         os.chdir(f'{wx_path}/lib')
 
-        os.rename(dll_folder_initial, dll_folder_final)
+        if not os.path.exists(dll_folder_final):
+            os.rename(dll_folder_initial, dll_folder_final)
 
         # Once the build has finished, vc_x64_dll needs to be copied into gmat/application/debug
         #  to enable Windows debug build. (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
