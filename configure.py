@@ -339,102 +339,104 @@ def build_xerces(plat: str):
     os.system(f'rm -Rf {xerces_build_path}')
 
 
-def build_wxWidgets(plat: str):
+def build_wxWidgets():
     print(f'\n********** Configuring wxWidgets {wx_version} **********')
 
     # Windows-specific build
-    if plat == 'win32':
-        wx_path = f'{wxWidgets_path}/{wx_version_folder}'
+    match platform:
+        case Platform.Windows:
+            wx_path = f'{wxWidgets_path}/{wx_version_folder}'
 
-        dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'  # vc141_x64_dll
-        dll_folder_final: str = dll_folder_initial.replace(wx_type, '')  # vc141dll
+            dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'  # vc141_x64_dll
+            dll_folder_final: str = dll_folder_initial.replace(wx_type, '')  # vc141dll
 
-        if os.path.exists(f'{wx_path}/lib/{dll_folder_final}'):
-            print('-- wxWidgets already configured')
-            return
+            if os.path.exists(f'{wx_path}/lib/{dll_folder_final}'):
+                print('-- wxWidgets already configured')
+                return
 
-        if not os.path.exists(wx_path):
-            raise FileNotFoundError(wx_path, f'Could not find folder "{wx_path}" to build wxWidgets.')
+            if not os.path.exists(wx_path):
+                raise FileNotFoundError(wx_path, f'Could not find folder "{wx_path}" to build wxWidgets.')
 
-        os.chdir(wx_path)
-        try:
-            os.chdir('build/msw')
-        except FileNotFoundError as e:
-            e.add_note(f'\n"{e.filename}" was not found while building wxWidgets.\n\n'
-                                    f'\t- Current working directory: {os.getcwd()}\n'
-                                    f'\t- Directory contents: {os.listdir()}')
-            raise e
+            os.chdir(wx_path)
+            try:
+                os.chdir('build/msw')
+            except FileNotFoundError as e:
+                e.add_note(f'\n"{e.filename}" was not found while building wxWidgets.\n\n'
+                           f'\t- Current working directory: {os.getcwd()}\n'
+                           f'\t- Directory contents: {os.listdir()}')
+                raise e
 
-        def wxwidgets_build_command(build_type):
-            return (f'nmake -f makefile.vc OFFICIAL_BUILD=1 COMPILER_VERSION='
-                    f'{vc_major_version}{vc_minor_version} {wx_tgt_cpu} SHARED=1 BUILD={build_type}'
-                    f' > "{logs_path}\\wxWidgets_build_{build_type}.log" 2>&1')
+            def wxwidgets_build_command(build_type):
+                return (f'nmake -f makefile.vc OFFICIAL_BUILD=1 COMPILER_VERSION='
+                        f'{vc_major_version}{vc_minor_version} {wx_tgt_cpu} SHARED=1 BUILD={build_type}'
+                        f' > "{logs_path}\\wxWidgets_build_{build_type}.log" 2>&1')
 
-        print('-- Compiling debug wxWidgets. This could take a while...')
-        os.system(wxwidgets_build_command('debug'))
+            print('-- Compiling debug wxWidgets. This could take a while...')
+            os.system(wxwidgets_build_command('debug'))
 
-        print('-- Compiling release wxWidgets. This could take a while...')
-        os.system(wxwidgets_build_command('release'))
+            print('-- Compiling release wxWidgets. This could take a while...')
+            os.system(wxwidgets_build_command('release'))
 
-        os.chdir(f'{wx_path}/lib')
+            os.chdir(f'{wx_path}/lib')
 
-        os.rename(dll_folder_initial, dll_folder_final)
+            os.rename(dll_folder_initial, dll_folder_final)
 
-        # Once the build has finished, vc_x64_dll needs to be copied into gmat/application/debug
-        #  to enable Windows debug build. (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
-        dll_name = f'wxmsw30ud_core_vc{vc_major_version}{vc_minor_version}_x64.dll'
-        dll_source = f'{wx_path}/lib/{dll_folder_final}/{dll_name}'
-        dll_destination = f'{gmat_path}/application/debug/{dll_name}'
-        shutil.copyfile(dll_source, dll_destination)
+            # Once the build has finished, vc_x64_dll needs to be copied into gmat/application/debug
+            #  to enable Windows debug build. (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
+            dll_name = f'wxmsw30ud_core_vc{vc_major_version}{vc_minor_version}_x64.dll'
+            dll_source = f'{wx_path}/lib/{dll_folder_final}/{dll_name}'
+            dll_destination = f'{gmat_path}/application/debug/{dll_name}'
+            shutil.copyfile(dll_source, dll_destination)
 
-    else:  # running on something other than Windows
-        # Set build path based on version
-        wx_path = f'{wxWidgets_path}/wxWidgets-{wx_version}'
+        # running on something other than Windows
+        case _:
+            # Set build path based on version
+            wx_path = f'{wxWidgets_path}/wxWidgets-{wx_version}'
 
-        wx_build_path = f'{wx_path}/{wx_platform_name}-build'
-        wx_install_path = f'{wx_path}/{wx_platform_name}-install'
-        wx_test_file = f'{wx_install_path}/lib/libwx_baseu-3.0.{wx_ext}'
+            wx_build_path = f'{wx_path}/{wx_platform_name}-build'
+            wx_install_path = f'{wx_path}/{wx_platform_name}-install'
+            wx_test_file = f'{wx_install_path}/lib/libwx_baseu-3.0.{wx_ext}'
 
-        # Build wxWidgets if the test file doesn't already exist
-        # Note that according to
-        #   http://docs.wxwidgets.org/3.0/overview_debugging.html
-        # debugging features "are always available by default", so
-        # we don't build a separate debug version here.
-        # IF a debug version is required in the future, then this
-        # if/else block should be repeated with the --enable-debug flag
-        # added to mac & linux versions of the wx ./configure command
-        if os.path.exists(wx_test_file):
-            print(f'wxWidgets {wx_version} already configured')
-            return
+            # Build wxWidgets if the test file doesn't already exist
+            # Note that according to
+            #   http://docs.wxwidgets.org/3.0/overview_debugging.html
+            # debugging features "are always available by default", so
+            # we don't build a separate debug version here.
+            # IF a debug version is required in the future, then this
+            # if/else block should be repeated with the --enable-debug flag
+            # added to mac & linux versions of the wx ./configure command
+            if os.path.exists(wx_test_file):
+                print(f'wxWidgets {wx_version} already configured')
+                return
 
-        os.makedirs(wx_build_path, exist_ok=True)
-        os.chdir(wx_build_path)
+            os.makedirs(wx_build_path, exist_ok=True)
+            os.chdir(wx_build_path)
 
-        print(f'Configuring wxWidgets {wx_version}. This could take a while...')
+            print(f'Configuring wxWidgets {wx_version}. This could take a while...')
 
-        macos_flags = ''
-        if sys.platform == 'darwin':
-            # wxWidgets 3.0.2 has a compile error due to an incorrect
-            # include file on OSX 10.10+. Apply patch to fix this.
-            # See [GMT-5384] and http://goharsha.com/blog/compiling-wxwidgets-3-0-2-mac-os-x-yosemite/
-            osx_ver = mac_plat.mac_ver()[0]
-            if wx_version == '3.0.2' and osx_ver > '10.10.0':
-                os.system(f'sed -i.bk "s/WebKit.h/WebKitLegacy.h/" "{wx_path}/src/osx/webview_webkit.mm"')
+            macos_flags = ''
+            if platform == Platform.macOS:
+                # wxWidgets 3.0.2 has a compile error due to an incorrect
+                # include file on OSX 10.10+. Apply patch to fix this.
+                # See [GMT-5384] and http://goharsha.com/blog/compiling-wxwidgets-3-0-2-mac-os-x-yosemite/
+                osx_ver = mac_plat.mac_ver()[0]
+                if wx_version == '3.0.2' and osx_ver > '10.10.0':  # TODO update wx_version if it's changed globally
+                    os.system(f'sed -i.bk "s/WebKit.h/WebKitLegacy.h/" "{wx_path}/src/osx/webview_webkit.mm"')
 
-            # wxWidgets needs these flags on OSX
-            # NOTE on liblzma: The Mac build/test machine contains liblzma (via homebrew 'xz'), which conflicts with
-            #  the wxWidgets build process
-            macos_flags = (f'--with-osx_cocoa --without-liblzma --with-macosx-version-min={osx_min_version} '
-                           f'--with-macosx-sdk={osx_sdk}')
+                # wxWidgets needs these flags on OSX
+                # NOTE on liblzma: The Mac build/test machine contains liblzma (via homebrew 'xz'), which conflicts with
+                #  the wxWidgets build process
+                macos_flags = (f'--with-osx_cocoa --without-liblzma --with-macosx-version-min={osx_min_version} '
+                               f'--with-macosx-sdk={osx_sdk}')
 
-        os.system(f'../configure {macos_flags} --enable-unicode --with-opengl \
-                    --prefix="{wx_install_path}" > "{logs_path}/wxWidgets_configure.log" 2>&1')
+            os.system(f'../configure {macos_flags} --enable-unicode --with-opengl \
+                        --prefix="{wx_install_path}" > "{logs_path}/wxWidgets_configure.log" 2>&1')
 
-        # Compile, install, and clean wxWidgets
-        make_depend('wxWidgets', 'build')
-        make_depend('wxWidgets', 'install')
-        os.chdir('..')
-        os.system(f'rm -Rf "{wx_build_path}"')
+            # Compile, install, and clean wxWidgets
+            make_depend('wxWidgets', 'build')
+            make_depend('wxWidgets', 'install')
+            os.chdir('..')
+            os.system(f'rm -Rf "{wx_build_path}"')
 
     print('-- wxWidgets build complete!')
 
@@ -648,7 +650,7 @@ tsplot_path = f'{depends_path}/tsPlot'
 
 # TODO use to set PLATFORM_NAME
 class Platform(Enum):
-    Windows = 'windows'
+    Windows = 'win32'
     macOS = 'macosx'
     Linux = 'linux'
 
@@ -660,17 +662,20 @@ if __name__ == '__main__':
     if not os.path.exists(logs_path):
         os.mkdir(logs_path)
 
-    sys_plat = sys.platform
     # Platform-based setup
-    if sys_plat == 'win32':
-        PLATFORM_NAME = 'windows'
-        swig_dir = f'{swig_path}/swigwin'
-        swig_platform_name = 'windows'
-        setup_windows()
-    else:
-        swig_dir = f'{swig_path}/swig'
+    swig_dir = f'{swig_path}/swig'
+    sys_plat = sys.platform
+    match sys.platform:
+        case 'win32':
+            platform: Platform = Platform.Windows
+            PLATFORM_NAME = 'windows'
+            # noinspection PyRedeclaration
+            swig_dir = f'{swig_path}/swigwin'
+            swig_platform_name = 'windows'
+            setup_windows()
 
-        if sys_plat == 'darwin':
+        case 'darwin':
+            platform: Platform = Platform.macOS
             PLATFORM_NAME = 'macosx'
 
             cmake_platform_name = 'cocoa'
@@ -679,7 +684,8 @@ if __name__ == '__main__':
 
             wx_ext = 'dylib'
 
-        else:
+        case _:
+            platform: Platform = Platform.Linux
             PLATFORM_NAME = 'linux'
             cmake_platform_name = 'linux'
             wx_platform_name = 'gtk'
@@ -713,7 +719,7 @@ if __name__ == '__main__':
 
     # Build the dependencies using CMake
     build_xerces(sys_plat)
-    build_wxWidgets(sys_plat)
+    build_wxWidgets()
     build_cspice(sys_plat)
     build_swig(sys_plat)
 
