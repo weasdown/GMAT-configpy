@@ -110,7 +110,7 @@ def download_depends():
 
             print('wxWidgets download complete!\n')
 
-    def download_cspice(plat: str):
+    def download_cspice():
         # Download CSPICE if it doesn't already exist
         if os.path.exists(cspice_path):
             print('CSPICE already downloaded')
@@ -120,13 +120,10 @@ def download_depends():
         os.makedirs(cspice_path, exist_ok=True)
         os.chdir(cspice_path)
 
-        if plat == 'darwin':
-            cspice_type = 'MacIntel_OSX_AppleC'
-        else:
-            cspice_type = 'PC_Linux_GCC'
+        cspice_type: str = 'PC_Linux_GCC'
 
         print(f'\nDownloading {cspice_bit}-bit CSPICE {cspice_version}...')
-        if plat == 'win32':
+        if platform == Platform.Windows:
             # Download and extract Spice for Windows (32/64-bit)
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
             download_file(cspice_url, 'cspice.zip')
@@ -135,6 +132,9 @@ def download_depends():
             os.remove('cspice.zip')
 
         else:  # Platform is not Windows
+            if platform == Platform.macOS:
+                cspice_type = 'MacIntel_OSX_AppleC'
+
             # Download and extract Spice for Mac/Linux (32/64-bit)
             os.system(f'curl https://naif.jpl.nasa.gov/pub/naif/misc/toolkit_"{cspice_version}"/C/"\
                     {cspice_type}"_{cspice_bit}/packages/cspice.tar.Z > cspice.tar.Z')
@@ -142,9 +142,10 @@ def download_depends():
             os.system('tar -xf cspice.tar')
             os.system(f'mv cspice cspice_dir')
             os.remove('cspice.tar')
+
         print('CSPICE download complete!\n')
 
-    def download_swig(plat: str):
+    def download_swig():
         # Download SWIG if it doesn't already exist
         # Check platform-appropriate path
         if os.path.exists(swig_dir):
@@ -158,12 +159,14 @@ def download_depends():
         os.chdir(swig_path)
 
         print(f'\nDownloading SWIG {swig_version}...')
-        if plat == 'win32':
+        # Windows build
+        if platform == Platform.Windows:
             # Download and extract SWIG for Windows
             download_file(f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip', 'swig.zip')
             extract('swig.zip')
             os.rename(f'swigwin-{swig_version}', 'swigwin')
             os.remove('swig.zip')
+        # macOS or Linux build
         else:
             # Download and extract SWIG for Mac/Linux
             download_file(f'http://download.sourceforge.net/swig/swigwin-{swig_version}.tar.gz', 'swig.tar.gz')
@@ -229,8 +232,8 @@ def download_depends():
 
     download_xerces()
     download_wxwidgets()
-    download_cspice(sys_plat)
-    download_swig(sys_plat)
+    download_cspice()
+    download_swig()
     download_java()
 
     print('\nDependencies download complete!')
@@ -246,7 +249,7 @@ def make_depend(dependency: str, install_type: str):
         raise RuntimeError(f'{dependency} {install_type} build failed. Fix errors and try again.')
 
 
-def build_xerces(plat: str):
+def build_xerces():
     if not os.path.exists(xerces_path):
         raise FileNotFoundError(f'Xerces build cannot begin because the xerces folder was not found.'
                                 f'\nCurrent working directory: {os.getcwd()}')
@@ -254,7 +257,7 @@ def build_xerces(plat: str):
     print(f'\n********** Configuring Xerces-C++ {xerces_version} **********')
 
     # Windows-specific build
-    if plat == 'win32':
+    if platform == Platform.Windows:
         xerces_outdir = f'{xerces_path}/windows-install'
         # xerces_arch = 'Win64'
 
@@ -268,7 +271,7 @@ def build_xerces(plat: str):
         print('Setting up CMake...')
         os.system(
             f'cmake -G "Visual Studio {vs_major_version} {str(vs_version)}" -DBUILD_SHARED_LIBS:BOOL=OFF '
-            f'-Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="{xerces_outdir}" "{xerces_path}" > '
+            f'-Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="{xerces_outdir}" "{xerces_path}" -Wno-dev > '
             f'"{logs_path}\\xerces_cmake.log" 2>&1')
 
         print('-- Compiling debug Xerces. This could take a while...')
@@ -282,9 +285,11 @@ def build_xerces(plat: str):
         return
 
     # Out-of-source xerces build/install locations
-    if sys.platform == 'darwin':
+    elif platform == Platform.macOS:
         xerces_build_path = f'{xerces_path}/cocoa-build'
         xerces_install_path = f'{xerces_path}/cocoa-install'
+
+    # Linux-specific build
     else:
         xerces_build_path = f'{xerces_path}/linux-build'
         xerces_install_path = f'{xerces_path}/linux-install'
@@ -441,7 +446,7 @@ def build_wxWidgets():
     print('-- wxWidgets build complete!')
 
 
-def build_cspice(plat: str):
+def build_cspice():
     print('\n********** Configuring CSPICE **********')
 
     def cspice_win():
@@ -479,10 +484,11 @@ def build_cspice(plat: str):
 
             return
 
-    if plat == 'win32':
+    if platform == Platform.Windows:
         cspice_win()
         return
 
+    # macOS or Linux build
     else:
         # Windows would have returned or thrown error so below is macOS/Linux specific
         spice_path = f'{cspice_path}/{cspice_dir}'
@@ -526,12 +532,13 @@ def build_cspice(plat: str):
     print('-- CSPICE build complete!\n')
 
 
-def build_swig(plat: str):
+def build_swig():
     # Windows is pre-built
-    if plat == 'win32':
+    if platform == Platform.Windows:
         print('\n-- SWIG for Windows comes pre-built')
         return
 
+    # macOS or Linux build
     else:
         print('\n********** Configuring SWIG **********')
 
@@ -664,7 +671,6 @@ if __name__ == '__main__':
 
     # Platform-based setup
     swig_dir = f'{swig_path}/swig'
-    sys_plat = sys.platform
     match sys.platform:
         case 'win32':
             platform: Platform = Platform.Windows
@@ -718,9 +724,9 @@ if __name__ == '__main__':
     download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
 
     # Build the dependencies using CMake
-    build_xerces(sys_plat)
+    build_xerces()
     build_wxWidgets()
-    build_cspice(sys_plat)
-    build_swig(sys_plat)
+    build_cspice()
+    build_swig()
 
     print('\n*** Done configuring GMAT dependencies ***\n')
