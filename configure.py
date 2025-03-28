@@ -351,7 +351,10 @@ def build_wxWidgets():
 
     # Windows-specific build
     if platform == Platform.Windows:
-        wx_path = f'{wxWidgets_path}/{wx_version_folder}'
+        wx_path: str = f'{wxWidgets_path}/{wx_version_folder}'
+
+        if not os.path.exists(wx_path):
+            raise FileNotFoundError(wx_path, f'Could not find folder "{wx_path}" to build wxWidgets.')
 
         dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'  # vc141_x64_dll
         dll_folder_final: str = dll_folder_initial.replace(wx_type, '')  # vc141dll
@@ -359,9 +362,6 @@ def build_wxWidgets():
         if os.path.exists(f'{wx_path}/lib/{dll_folder_final}'):
             print('-- wxWidgets already configured')
             return
-
-        if not os.path.exists(wx_path):
-            raise FileNotFoundError(wx_path, f'Could not find folder "{wx_path}" to build wxWidgets.')
 
         os.chdir(wx_path)
         try:
