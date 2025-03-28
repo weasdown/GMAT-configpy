@@ -166,6 +166,7 @@ def download_depends():
             extract('swig.zip')
             os.rename(f'swigwin-{swig_version}', 'swigwin')
             os.remove('swig.zip')
+
         # macOS or Linux build
         else:
             # Download and extract SWIG for Mac/Linux
@@ -620,7 +621,7 @@ def download_file(url: str, save_name: str) -> None:
 
 
 cspice_version = 'N0067'
-swig_version = '4.2'  # 4.2 is required for full Python 3.12 support as per https://gmat.atlassian.net/browse/GMT-8180
+swig_version = '4.2.0'  # 4.2.0 is required for full Python 3.12 support as per https://gmat.atlassian.net/browse/GMT-8180
 pcre_version = '8.45'
 java_version = '11.0.5'
 java_update = '10'
