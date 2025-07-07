@@ -635,37 +635,6 @@ def download_file(url: str, save_name: str) -> None:
     os.system(f'curl -L {url} > {save_name}')
 
 
-cspice_version = 'N0067'
-swig_version = '4.2.0'  # 4.2.0 is required for full Python 3.12 support as per https://gmat.atlassian.net/browse/GMT-8180
-pcre_version = '8.45'
-java_version = '11.0.5'
-java_update = '10'
-wx_version = '3.0.4'  # 3.2.6 is being implemented for R2025a but has several critical issues.
-wx_version_folder = f'wxWidgets-{wx_version}'
-xerces_version = '3.2.2'
-osx_min_version = '10.15'
-osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
-vs_version = 2022
-vs_major_version = '17'
-vc_major_version = '14'
-vc_minor_version = '1'
-
-gmat_path = os.path.dirname(os.getcwd())  # Path to gmat folder
-depends_path = str(f'{gmat_path}/depends')  # Path to depends folder
-logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
-
-# Create path variables
-bin_path = f'{depends_path}/bin'
-f2c_path = f'{depends_path}/f2c'
-cspice_path: str  # cspice_path is defined per platform below
-swig_path = f'{depends_path}/swig'
-java_path = f'{depends_path}/java'
-wxWidgets_path = f'{depends_path}/wxWidgets'
-xerces_path = f'{depends_path}/xerces'
-sofa_path = f'{depends_path}/sofa'
-tsplot_path = f'{depends_path}/tsPlot'
-
-
 # TODO use to set PLATFORM_NAME
 class Platform(Enum):
     Windows = 'win32'
@@ -675,6 +644,36 @@ class Platform(Enum):
 
 if __name__ == '__main__':
     print('\n*** Configuring GMAT dependencies ***\n')
+
+    cspice_version = 'N0067'
+    swig_version = '4.2.0'  # 4.2.0 is required for full Python 3.12 support as per https://gmat.atlassian.net/browse/GMT-8180
+    pcre_version = '8.45'
+    java_version = '11.0.5'
+    java_update = '10'
+    wx_version = '3.0.4'  # 3.2.6 is being implemented for R2025a but has several critical issues.
+    wx_version_folder = f'wxWidgets-{wx_version}'
+    xerces_version = '3.2.2'
+    osx_min_version = '10.15'
+    osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
+    vs_version = 2022
+    vs_major_version = '17'
+    vc_major_version = '14'
+    vc_minor_version = '1'
+
+    gmat_path = os.path.dirname(os.getcwd())  # Path to gmat folder
+    depends_path = str(f'{gmat_path}/depends')  # Path to depends folder
+    logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
+
+    # Create path variables
+    bin_path = f'{depends_path}/bin'
+    f2c_path = f'{depends_path}/f2c'
+    cspice_path: str  # cspice_path is defined per platform below
+    swig_path = f'{depends_path}/swig'
+    java_path = f'{depends_path}/java'
+    wxWidgets_path = f'{depends_path}/wxWidgets'
+    xerces_path = f'{depends_path}/xerces'
+    sofa_path = f'{depends_path}/sofa'
+    tsplot_path = f'{depends_path}/tsPlot'
 
     # Create log directory
     if not os.path.exists(logs_path):
