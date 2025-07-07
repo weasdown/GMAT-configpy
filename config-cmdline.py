@@ -839,7 +839,7 @@ def menu():
         raise NotImplementedError
 
     print(f'\nSetting up configuration "{config_desc}" '
-          f'{f"with APIs {api_desc}" if api_desc != "None" else "without APIs"}')
+          f'{f"with APIs {api_desc}" if api_desc != "None" else "without APIs"}\n')
 
     return debug, release
 
