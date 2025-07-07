@@ -722,7 +722,7 @@ def py_ver_prompt():
     minor_ver_max = 13
     min_ver = f'{major_ver}.{minor_ver_min}'
     max_ver = f'{major_ver}.{minor_ver_max}'
-    vers = input('Please specify which version(s) of Python to build for, separating with commas '
+    vers = input('\nPlease specify which version(s) of Python to build for, separating with commas '
                  'for multiple versions. You can also specify "All" to build all allowed versions '
                  f'({min_ver}-{max_ver}) [All]\n')
 
