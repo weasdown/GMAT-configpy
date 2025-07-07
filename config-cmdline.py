@@ -719,7 +719,7 @@ def py_ver_prompt():
     default = 'All'
     major_ver = 3
     minor_ver_min = 6
-    minor_ver_max = 12
+    minor_ver_max = 13
     min_ver = f'{major_ver}.{minor_ver_min}'
     max_ver = f'{major_ver}.{minor_ver_max}'
     vers = input('Please specify which version(s) of Python to build for, separating with commas '
