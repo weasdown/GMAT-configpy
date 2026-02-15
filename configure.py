@@ -587,7 +587,7 @@ def build_swig():
         os.system(f'rm -Rf {swig_build_path}')
 
 
-def extract(archive: str, output_path: str = None) -> None:
+def extract(archive: str, output_path: str = '') -> None:
     """
     Unzips a .zip or .tar file in a given directory to the current directory, or to a given output directory if specified.
 
@@ -604,31 +604,30 @@ def extract(archive: str, output_path: str = None) -> None:
     """
     filename, extension = os.path.splitext(archive)
 
-    if platform == Platform.Windows:
-        seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
-    # macOS or Linux extraction
-    else:
-        raise NotImplementedError(f'Unzipping for platform "{platform.name}" is not yet supported')
-
     if extension == '.zip':
-        output_path_arg: str = '' if output_path is None else f'-o"./{output_path}" '
-        os.system(f'{seven_zip_exe} x {archive} -r {output_path_arg}> nul')
+        if platform == Platform.Windows:
+            seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
+            output_path_arg: str = '' if output_path is None else f'-o"./{output_path}" '
+            os.system(f'{seven_zip_exe} x {archive} -r {output_path_arg}> nul')
 
     elif extension == '.bz2':
-        with tarfile.open(archive, 'r:bz2') as tar:
-            tar.extractall(filter='data', path=output_path if output_path is not None else '.')
+        if platform == Platform.Windows:
+            with tarfile.open(archive, 'r:bz2') as tar:
+                tar.extractall(filter='data', path=output_path if output_path else '.')
+        elif platform == Platform.Linux:
+            os.system(f'tar xjf {archive}')
 
     elif extension == '.gz':
         raise NotImplementedError
         # os.system('gzip -d jdk.tar.gz')
         # os.system('tar -xf jdk.tar')
-
+    
     else:
         raise ValueError(f'Archives with the "{extension}" extension cannot be extracted using extract().\n'
-                         f'\nExtraction variables in extract():\n'
-                         f'\t- archive: "{archive}"\n'
-                         f'\t- extension: "{extension}"\n'
-                         f'\t- output_path: "{output_path}"\n')
+                        f'\nExtraction variables in extract():\n'
+                        f'\t- archive: "{archive}"\n'
+                        f'\t- extension: "{extension}"\n'
+                        f'\t- output_path: "{output_path}"\n')
 
 
 def download_file(url: str, save_name: str) -> None:
