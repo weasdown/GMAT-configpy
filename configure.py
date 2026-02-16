@@ -632,7 +632,7 @@ def extract(archive: str, output_path: str = '') -> None:
 
 
 def download_file(url: str, save_name: str) -> None:
-    os.system(f'curl -L {url} > {save_name}')
+    os.system(f'wget -q --show-progress -O {save_name} {url}')
 
 
 # TODO use to set PLATFORM_NAME
