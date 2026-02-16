@@ -305,7 +305,8 @@ def build_xerces():
         print(f'Xerces {xerces_version} already configured')
         return
 
-    os.mkdir(xerces_build_path)
+    os.makedirs(xerces_build_path, exist_ok=True)  # Create build directory.
+    os.makedirs(xerces_install_path, exist_ok=True)  # Create install directory.
     os.chdir(xerces_build_path)
 
     # For users who compile GMAT on multiple platforms side-by-side.
@@ -323,9 +324,9 @@ def build_xerces():
 
     print(f'Configuring Xerces {xerces_version} debug library. This could take a while...')
     common_c_flags = f'-O0 -g -fPIC {macos_flags}'
-    os.system(f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" CXXFLAGS=\
-                "{common_c_flags}" --prefix="{xerces_install_path}" > \
-                "{logs_path}/xerces_configure_debug.log" 2>&1')
+
+    debug_configure_command = f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" > "{logs_path}/xerces_configure_debug.log" 2>&1'
+    os.system(debug_configure_command)
 
     make_depend('xerces', 'build_debug')
     make_depend('xerces', 'install_debug')
@@ -336,9 +337,10 @@ def build_xerces():
 
     print(f'Configuring Xerces {xerces_version} release library. This could take a while...')
     common_c_flags = f'-O2 -fPIC {macos_flags}'
-    os.system(f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" \
+    release_configure_command = f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" \
                 CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" \
-                > "{logs_path}/xerces_configure_release.log" 2>&1')
+                > "{logs_path}/xerces_configure_release.log" 2>&1'
+    os.system(release_configure_command)
 
     make_depend('xerces', 'build_release')
     make_depend('xerces', 'install_release')
