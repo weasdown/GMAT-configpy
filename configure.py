@@ -244,12 +244,13 @@ def download_depends():
 
 def make_depend(dependency: str, install_type: str):
     dep_l = dependency.lower()  # convert name to lowercase
-    install = 'install ' if install_type == 'install' else ''
-    j_cores = f' -j{num_cores}' if 'build' in install_type else ''
-    make_flag = os.system(f'make {install}{j_cores}> \
-                            "{logs_path}/{dep_l}_{install_type}.log" 2>&1')
+    install = 'install ' if 'install' in install_type else ''
+    j_cores = f'-j{num_cores}' if 'build' in install_type else ''
+    log_path = f'{logs_path}/{dep_l}_{install_type}.log'
+    make_command = f'make {install}{j_cores} > "{log_path}" 2>&1'
+    make_flag = os.system(make_command)
     if make_flag != 0:
-        raise RuntimeError(f'{dependency} {install_type} build failed. Fix errors and try again.')
+        raise RuntimeError(f'{dependency} {install_type} build failed. Fix errors listed in log at {log_path} and try again.')
 
 
 def build_xerces():
