@@ -224,7 +224,7 @@ def download_depends():
         # macOS or Linux download
         else:
             # Download and extract AdoptOpenJDK for Mac/Linux
-            download_file(f'{java_url}.tar.gz', 'jdk.tar.gz')
+            download_file(f'{java_url}', 'jdk.tar.gz')
             # TODO use extract()
             os.system('gzip -d jdk.tar.gz')
             os.system('tar -xf jdk.tar')
