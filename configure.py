@@ -128,7 +128,7 @@ def download_depends():
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
             download_file(cspice_url, 'cspice.zip')
             extract('cspice.zip')
-            os.rename('cspice', f'{cspice_dir}')
+            os.rename('cspice', f'{cspice_dir}')  # FIXME: folder name not being set correctly (not cspice64)
             os.remove('cspice.zip')
 
         else:  # Platform is not Windows
