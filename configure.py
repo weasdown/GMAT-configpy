@@ -142,7 +142,7 @@ def download_depends():
             os.system(f'curl {cspice_url} > cspice.tar.Z')
             os.system('gzip -d cspice.tar.Z')
             os.system('tar -xf cspice.tar')
-            os.system(f'mv cspice cspice_dir')
+            os.system(f'mv cspice {cspice_dir}')
             os.remove('cspice.tar')
 
         print('CSPICE download complete!\n')
