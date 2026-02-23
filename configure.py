@@ -254,9 +254,11 @@ def make_depend(dependency: str, install_type: str):
                     )
 
     try:
-        subprocess.run(make_command.split(' '),
-                       capture_output=True,
-                       check=True, text=True, shell=True)
+        print(f'Running "{make_command}" in "{os.getcwd()}"')
+        _run_command(make_command)
+        # subprocess.run(make_command.split(' '),
+        #                capture_output=True,
+        #                check=True, text=True, shell=True)
 
     except subprocess.CalledProcessError as cpe:
         print(f'Error returned by subprocess.run: "{cpe.stderr}"')
@@ -362,6 +364,21 @@ def build_xerces():
 
 
 def build_wxwidgets():
+    """
+    Change directory to `wx_path`, then:
+
+    ```console
+
+    mkdir gtk-build
+    mkdir gtk-install
+    cd gtk-build
+    ../configure  --enable-unicode --with-opengl --prefix="/home/will/dev/non-OH/GMAT/GMAT-src-R2025a/depends/wxWidgets/wxWidgets-3.0.4/gtk-install"
+    make -j12
+    make install -j12
+    cd ..
+    rm -rf gtk-build
+    ```
+    """
     print(f'\n********** Configuring wxWidgets {wx_version} **********')
 
     # Windows-specific build
@@ -447,6 +464,7 @@ def build_wxwidgets():
 
         os.makedirs(wx_build_path, exist_ok=True)
         os.makedirs(wx_install_path, exist_ok=True)
+        print(f'Switching to {wx_build_path}')
         os.chdir(wx_build_path)
 
         print(f'Configuring wxWidgets {wx_version}. This could take a while...')
@@ -466,7 +484,8 @@ def build_wxwidgets():
             macos_flags = (f'--with-osx_cocoa --without-liblzma --with-macosx-version-min={osx_min_version} '
                            f'--with-macosx-sdk={osx_sdk}')
 
-        prefix = Path(wx_install_path).resolve()
+        prefix = Path(wx_install_path)
+        print(f'prefix path: "{prefix}"')
         if not prefix.exists():  # Check prefix directory exists
             raise FileNotFoundError(f'prefix directory {prefix} must exist for wxWidgets configure command.')
 
@@ -475,11 +494,14 @@ def build_wxwidgets():
             # TODO reinstate or remove logging for wxWidgets configure command
             # f' > "{log_path}" 2>&1'
         )
+        print(f'wxWidgets configure command: "{wxwidgets_configure_command}"')
+        print(f'Running "{wxwidgets_configure_command}" in "{os.getcwd()}"')
         try:
-            subprocess.run(wxwidgets_configure_command.split(' '),
-                           capture_output=True,
-                           check=True, text=True,
-                           shell=True)
+            _run_command(wxwidgets_configure_command)
+            # subprocess.run(wxwidgets_configure_command.split(' '),
+            #                capture_output=True,
+            #                check=True, text=True,
+            #                shell=True)
         except subprocess.CalledProcessError as cpe:
             raise RuntimeError(cpe.stderr)
 
@@ -548,13 +570,14 @@ def build_cspice():
 
         if os.path.exists(cspice_test_file):
             print('-- CSPICE already configured')
-        else:
-            os.chdir(f'{spice_path}/src/cspice')
+            return None
+
+        os.chdir(f'{spice_path}/src/cspice')
 
         # Compile debug CSPICE with integer uiolen [GMT-5044]
         print('Compiling CSPICE debug library. This could take a while...')
-        os.environ['TKCOMPILEOPTIONS'] = f'{tk_compile_arch} -c -ansi {flags} \
-            -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
+        debug_tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
+        os.environ['TKCOMPILEOPTIONS'] = debug_tk_compile_options
         make_flag = os.system(f'./mkprodct.csh > "{logs_path}/cspice_build_debug.log" 2>&1')
 
         if make_flag == 0:
@@ -564,14 +587,16 @@ def build_cspice():
 
         # Compile release CSPICE with integer uiolen [GMT-5044]
         print('Compiling CSPICE release library. This could take a while...')
-        os.environ['TKCOMPILEOPTIONS'] = f'{tk_compile_arch} -c -ansi {flags} \
-            -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
-        make_flag = os.system(f'./mkprodct.csh > "{logs_path}/cspice_build_release.log" 2>&1')
+        release_tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
+        os.environ['TKCOMPILEOPTIONS'] = release_tk_compile_options
+        mk_product_command = f'./mkprodct.csh'  # > "{logs_path}/cspice_build_release.log" 2>&1'
+        make_flag = _run_command(mk_product_command)
 
         if make_flag != 0:
-            print('CSPICE release build failed. Fix errors and try again.')
+            raise RuntimeError('CSPICE release build failed. Fix errors and try again.')
 
     print('-- CSPICE build complete!\n')
+    return None
 
 
 def build_swig():
