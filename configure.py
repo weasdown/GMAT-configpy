@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tarfile
 from enum import Enum
+from pathlib import Path
 
 
 # TODO copy improvements from config-cmdline.py then make config-cmdline refer to this
@@ -441,6 +442,7 @@ def build_wxWidgets():
         wx_build_path = f'{wx_path}/{wx_platform_name}-build'
         wx_install_path = f'{wx_path}/{wx_platform_name}-install'
         wx_test_file = f'{wx_install_path}/lib/libwx_baseu-3.0.{wx_ext}'
+        log_path = f'{logs_path}/wxWidgets_configure.log'
 
         # Build wxWidgets if the test file doesn't already exist
         # Note that according to
@@ -455,7 +457,8 @@ def build_wxWidgets():
             return
 
         os.makedirs(wx_build_path, exist_ok=True)
-        os.chdir(wx_build_path)
+        os.makedirs(wx_install_path, exist_ok=True)
+        os.chdir(wx_path)
 
         print(f'Configuring wxWidgets {wx_version}. This could take a while...')
 
@@ -474,14 +477,26 @@ def build_wxWidgets():
             macos_flags = (f'--with-osx_cocoa --without-liblzma --with-macosx-version-min={osx_min_version} '
                            f'--with-macosx-sdk={osx_sdk}')
 
-        os.system(f'../configure {macos_flags} --enable-unicode --with-opengl \
-                    --prefix="{wx_install_path}" > "{logs_path}/wxWidgets_configure.log" 2>&1')
+        prefix = Path(wx_install_path).resolve()
+        if not prefix.exists():  # Check prefix directory exists
+            raise FileNotFoundError(f'prefix directory {prefix} must exist for wxWidgets configure command.')
+
+        wxwidgets_configure_command = (f'./configure {macos_flags}--enable-unicode --with-opengl'
+                                       # f' --prefix="{prefix}"'
+                                       # TODO reinstate or remove logging for wxWidgets configure command
+                                       # f' > "{log_path}" 2>&1'
+                                       )
+        try:
+            subprocess.run(wxwidgets_configure_command.split(' '), capture_output=True, check=True, text=True)
+        except subprocess.CalledProcessError:
+            raise RuntimeError(f'wxWidgets configure failed. Fix errors listed in log at {log_path} and try again.')
 
         # Compile, install, and clean wxWidgets
+        print('Making wxWidgets')
         make_depend('wxWidgets', 'build')
         make_depend('wxWidgets', 'install')
         os.chdir('..')
-        os.system(f'rm -Rf "{wx_build_path}"')
+        os.system(f'rm -rf "{wx_build_path}"')
 
     print('-- wxWidgets build complete!')
 
