@@ -2,6 +2,7 @@ import os
 import platform as mac_plat
 import shutil
 import struct
+import subprocess
 import sys
 import tarfile
 from enum import Enum
@@ -245,12 +246,31 @@ def download_depends():
 def make_depend(dependency: str, install_type: str):
     dep_l = dependency.lower()  # convert name to lowercase
     install = 'install ' if 'install' in install_type else ''
-    j_cores = f'-j{num_cores}' if 'build' in install_type else ''
+    j_cores = f'-j{num_cores}'
     log_path = f'{logs_path}/{dep_l}_{install_type}.log'
-    make_command = f'make {install}{j_cores} > "{log_path}" 2>&1'
-    make_flag = os.system(make_command)
-    if make_flag != 0:
-        raise RuntimeError(f'{dependency} {install_type} build failed. Fix errors listed in log at {log_path} and try again.')
+    sudo = '' if platform == Platform.Windows else ('sudo -S ' if install_type == 'install' else '')
+    make_command = (f'{sudo}make {install}{j_cores}'
+                    # f' > "{log_path}" 2>&1'  # TODO reinstate or remove logging for make command
+                    )
+
+    try:
+        if platform != Platform.Windows and install_type == 'install':  # Linux/macOS and install_type == 'install'
+            sudo_password = input('Password for sudo: ')  # Installing on Linux/macOS requires sudo.
+            subprocess.run(make_command.split(' '), capture_output=True, check=True, text=True, input=sudo_password)
+
+            # System libraries must be updated to include newly built libraries.
+            library_update_command = 'sudo ldconfig /usr/lib'
+            print('Updating libraries')
+            subprocess.run(library_update_command.split(' '), capture_output=True, check=True, text=True,
+                           input=sudo_password)
+
+        else:  # Windows or install_type != 'install'
+            subprocess.run(make_command.split(' '), capture_output=True, check=True, text=True)
+
+    except subprocess.CalledProcessError as cpe:
+        print(f'Error returned by subprocess.run: "{cpe.stderr}"')
+        raise RuntimeError(
+            f'{dependency} {install_type} build failed. Fix errors listed in log at {log_path} and try again.')
 
 
 def build_xerces():
