@@ -371,7 +371,7 @@ def build_xerces():
     os.system(f'rm -Rf {xerces_build_path}')
 
 
-def build_wxWidgets():
+def build_wxwidgets():
     print(f'\n********** Configuring wxWidgets {wx_version} **********')
 
     # Windows-specific build
@@ -773,7 +773,7 @@ if __name__ == '__main__':
 
     # Build the dependencies using CMake
     build_xerces()
-    build_wxWidgets()
+    build_wxwidgets()
     build_cspice()
     build_swig()
 
