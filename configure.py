@@ -666,6 +666,13 @@ def download_file(url: str, save_name: str) -> None:
     os.system(f'wget -q --show-progress -O {save_name} {url}')
 
 
+def _run_command(command: str) -> int:
+    return subprocess.run(command.split(' '),
+                          capture_output=True,
+                          # check=True, text=True,
+                          shell=True).returncode
+
+
 # TODO use to set PLATFORM_NAME
 class Platform(Enum):
     Windows = 'win32'
