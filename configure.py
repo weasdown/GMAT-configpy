@@ -249,24 +249,14 @@ def make_depend(dependency: str, install_type: str):
     install = 'install ' if 'install' in install_type else ''
     j_cores = f'-j{num_cores}'
     log_path = f'{logs_path}/{dep_l}_{install_type}.log'
-    sudo = '' if platform == Platform.Windows else ('sudo -S ' if install_type == 'install' else '')
-    make_command = (f'{sudo}make {install}{j_cores}'
+    make_command = (f'make {install}{j_cores}'
                     # f' > "{log_path}" 2>&1'  # TODO reinstate or remove logging for make command
                     )
 
     try:
-        if platform != Platform.Windows and install_type == 'install':  # Linux/macOS and install_type == 'install'
-            sudo_password = input('Password for sudo: ')  # Installing on Linux/macOS requires sudo.
-            subprocess.run(make_command.split(' '), capture_output=True, check=True, text=True, input=sudo_password)
-
-            # System libraries must be updated to include newly built libraries.
-            library_update_command = 'sudo ldconfig /usr/lib'
-            print('Updating libraries')
-            subprocess.run(library_update_command.split(' '), capture_output=True, check=True, text=True,
-                           input=sudo_password)
-
-        else:  # Windows or install_type != 'install'
-            subprocess.run(make_command.split(' '), capture_output=True, check=True, text=True)
+        subprocess.run(make_command.split(' '),
+                       capture_output=True,
+                       check=True, text=True, shell=True)
 
     except subprocess.CalledProcessError as cpe:
         print(f'Error returned by subprocess.run: "{cpe.stderr}"')
@@ -442,7 +432,6 @@ def build_wxwidgets():
         wx_build_path = f'{wx_path}/{wx_platform_name}-build'
         wx_install_path = f'{wx_path}/{wx_platform_name}-install'
         wx_test_file = f'{wx_install_path}/lib/libwx_baseu-3.0.{wx_ext}'
-        log_path = f'{logs_path}/wxWidgets_configure.log'
 
         # Build wxWidgets if the test file doesn't already exist
         # Note that according to
@@ -458,7 +447,7 @@ def build_wxwidgets():
 
         os.makedirs(wx_build_path, exist_ok=True)
         os.makedirs(wx_install_path, exist_ok=True)
-        os.chdir(wx_path)
+        os.chdir(wx_build_path)
 
         print(f'Configuring wxWidgets {wx_version}. This could take a while...')
 
@@ -481,21 +470,26 @@ def build_wxwidgets():
         if not prefix.exists():  # Check prefix directory exists
             raise FileNotFoundError(f'prefix directory {prefix} must exist for wxWidgets configure command.')
 
-        wxwidgets_configure_command = (f'./configure {macos_flags}--enable-unicode --with-opengl'
-                                       # f' --prefix="{prefix}"'
-                                       # TODO reinstate or remove logging for wxWidgets configure command
-                                       # f' > "{log_path}" 2>&1'
-                                       )
+        wxwidgets_configure_command = (
+            f'../configure {macos_flags}--enable-unicode --with-opengl --prefix="{prefix}"'
+            # TODO reinstate or remove logging for wxWidgets configure command
+            # f' > "{log_path}" 2>&1'
+        )
         try:
-            subprocess.run(wxwidgets_configure_command.split(' '), capture_output=True, check=True, text=True)
-        except subprocess.CalledProcessError:
-            raise RuntimeError(f'wxWidgets configure failed. Fix errors listed in log at {log_path} and try again.')
+            subprocess.run(wxwidgets_configure_command.split(' '),
+                           capture_output=True,
+                           check=True, text=True,
+                           shell=True)
+        except subprocess.CalledProcessError as cpe:
+            raise RuntimeError(cpe.stderr)
 
-        # Compile, install, and clean wxWidgets
-        print('Making wxWidgets')
+        # Compile, install, and clean wxWidgets.
+        print('Making wxWidgets...')
         make_depend('wxWidgets', 'build')
+        print('Installing wxWidgets...')
+        # FIXME not installing into gtk-install folder like it does when running directly through terminal.
         make_depend('wxWidgets', 'install')
-        os.chdir('..')
+        os.chdir(wx_path)
         os.system(f'rm -rf "{wx_build_path}"')
 
     print('-- wxWidgets build complete!')
