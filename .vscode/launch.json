@@ -9,7 +9,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/configure.py",
-            "cwd": "${workspaceFolder}/../GMAT-R2025a-src-data/depends",
+            "cwd": "${env:GMAT_GIT}/depends",
             "console": "integratedTerminal"
         },
         {
