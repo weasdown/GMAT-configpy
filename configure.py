@@ -29,7 +29,8 @@ def setup_windows():
         elif os.path.exists(f'{vs_path_base}/WDExpress'):
             vs_path = f'{vs_path_base}/WDExpress/Common7/Tools'
         else:
-            sys.exit("Could not find suitable Visual Studio development environment.")
+            sys.exit(
+                "Could not find suitable Visual Studio development environment.")
 
         syscall: str = f'{vs_path}/../../VC/Auxiliary/Build/vcvarsall.bat'
 
@@ -38,7 +39,8 @@ def setup_windows():
         syscall = f'{vs_path}/../../VC/vcvarsall.bat'
 
     else:
-        raise ValueError(f'Visual Studio version not recognised - {vs_version}.')
+        raise ValueError(
+            f'Visual Studio version not recognised - {vs_version}.')
 
     vs_env_command = f'\"{syscall}\" {vs_arch} & set > vsEnvironment.txt'
     print(f'Running {vs_env_command}')
@@ -108,7 +110,8 @@ def download_depends():
 
             # Make sure wxWidgets was downloaded
             if not os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
-                raise RuntimeError(f'Error in wxWidgets-{wx_version} download.')
+                raise RuntimeError(
+                    f'Error in wxWidgets-{wx_version} download.')
 
             print('wxWidgets download complete!\n')
 
@@ -130,7 +133,8 @@ def download_depends():
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
             download_file(cspice_url, 'cspice.zip')
             extract('cspice.zip')
-            os.rename('cspice', f'{cspice_dir}')  # FIXME: folder name not being set correctly (not cspice64)
+            # FIXME: folder name not being set correctly (not cspice64)
+            os.rename('cspice', f'{cspice_dir}')
             os.remove('cspice.zip')
 
         else:  # Platform is not Windows
@@ -164,7 +168,8 @@ def download_depends():
         # Windows build
         if platform == Platform.Windows:
             # Download and extract SWIG for Windows
-            download_file(f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip', 'swig.zip')
+            download_file(
+                f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip', 'swig.zip')
             extract('swig.zip')
             os.rename(f'swigwin-{swig_version}', 'swigwin')
             os.remove('swig.zip')
@@ -320,7 +325,8 @@ def build_xerces():
         return
 
     os.makedirs(xerces_build_path, exist_ok=True)  # Create build directory.
-    os.makedirs(xerces_install_path, exist_ok=True)  # Create install directory.
+    # Create install directory.
+    os.makedirs(xerces_install_path, exist_ok=True)
     os.chdir(xerces_build_path)
 
     # For users who compile GMAT on multiple platforms side-by-side.
@@ -336,7 +342,8 @@ def build_xerces():
     common_xerces_flags = ('--disable-shared --disable-netaccessor-curl'
                            ' --disable-transcoder-icu --disable-msgloader-icu')
 
-    print(f'Configuring Xerces {xerces_version} debug library. This could take a while...')
+    print(
+        f'Configuring Xerces {xerces_version} debug library. This could take a while...')
     common_c_flags = f'-O0 -g -fPIC {macos_flags}'
 
     debug_configure_command = f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" > "{logs_path}/xerces_configure_debug.log" 2>&1'
@@ -349,7 +356,8 @@ def build_xerces():
               f'{xerces_install_path}/lib/libxerces-cd.a')
     os.system('make clean > /dev/null 2>&1')
 
-    print(f'Configuring Xerces {xerces_version} release library. This could take a while...')
+    print(
+        f'Configuring Xerces {xerces_version} release library. This could take a while...')
     common_c_flags = f'-O2 -fPIC {macos_flags}'
     release_configure_command = f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" \
                 CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" \
@@ -386,10 +394,13 @@ def build_wxwidgets():
         wx_path: str = f'{wxWidgets_path}/{wx_version_folder}'
 
         if not os.path.exists(wx_path):
-            raise FileNotFoundError(wx_path, f'Could not find folder "{wx_path}" to build wxWidgets.')
+            raise FileNotFoundError(
+                wx_path, f'Could not find folder "{wx_path}" to build wxWidgets.')
 
-        dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'  # vc141_x64_dll
-        dll_folder_final: str = dll_folder_initial.replace(wx_type, '')  # vc141dll
+        # vc141_x64_dll
+        dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'
+        dll_folder_final: str = dll_folder_initial.replace(
+            wx_type, '')  # vc141dll
 
         if os.path.exists(f'{wx_path}/lib/{dll_folder_final}'):
             print('-- wxWidgets already configured')
@@ -467,7 +478,8 @@ def build_wxwidgets():
         print(f'Switching to {wx_build_path}')
         os.chdir(wx_build_path)
 
-        print(f'Configuring wxWidgets {wx_version}. This could take a while...')
+        print(
+            f'Configuring wxWidgets {wx_version}. This could take a while...')
 
         macos_flags = ''
         if platform == Platform.macOS:
@@ -476,7 +488,8 @@ def build_wxwidgets():
             # See [GMT-5384] and http://goharsha.com/blog/compiling-wxwidgets-3-0-2-mac-os-x-yosemite/
             osx_ver = mac_plat.mac_ver()[0]
             if wx_version == '3.0.2' and osx_ver > '10.10.0':  # TODO update wx_version if it's changed globally
-                os.system(f'sed -i.bk "s/WebKit.h/WebKitLegacy.h/" "{wx_path}/src/osx/webview_webkit.mm"')
+                os.system(
+                    f'sed -i.bk "s/WebKit.h/WebKitLegacy.h/" "{wx_path}/src/osx/webview_webkit.mm"')
 
             # wxWidgets needs these flags on OSX
             # NOTE on liblzma: The Mac build/test machine contains liblzma (via homebrew 'xz'), which conflicts with
@@ -487,7 +500,8 @@ def build_wxwidgets():
         prefix = Path(wx_install_path)
         print(f'prefix path: "{prefix}"')
         if not prefix.exists():  # Check prefix directory exists
-            raise FileNotFoundError(f'prefix directory {prefix} must exist for wxWidgets configure command.')
+            raise FileNotFoundError(
+                f'prefix directory {prefix} must exist for wxWidgets configure command.')
 
         wxwidgets_configure_command = (
             f'../configure {macos_flags}--enable-unicode --with-opengl --prefix="{prefix}"'
@@ -538,7 +552,8 @@ def build_cspice():
             raise e
 
         def compile_cspice(build_type):
-            print(f'-- Compiling {build_type} CSPICE. This could take a while...')
+            print(
+                f'-- Compiling {build_type} CSPICE. This could take a while...')
             os.system(f'cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS'
                       f' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
                       f' "{logs_path}\\cspice_build_{build_type}.log" 2>&1')
@@ -578,7 +593,8 @@ def build_cspice():
         print('Compiling CSPICE debug library. This could take a while...')
         debug_tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
         os.environ['TKCOMPILEOPTIONS'] = debug_tk_compile_options
-        make_flag = os.system(f'./mkprodct.csh > "{logs_path}/cspice_build_debug.log" 2>&1')
+        make_flag = os.system(
+            f'./mkprodct.csh > "{logs_path}/cspice_build_debug.log" 2>&1')
 
         if make_flag == 0:
             os.system('mv ../../lib/cspice.a ../../lib/cspiced.a')
@@ -593,7 +609,8 @@ def build_cspice():
         make_flag = _run_command(mk_product_command)
 
         if make_flag != 0:
-            raise RuntimeError('CSPICE release build failed. Fix errors and try again.')
+            raise RuntimeError(
+                'CSPICE release build failed. Fix errors and try again.')
 
     print('-- CSPICE build complete!\n')
     return None
@@ -626,14 +643,16 @@ def build_swig():
 
         # [GMT-6892] Build static PCRE using SWIG-provided build script
         os.rename(f'../{pcre_filename}', f'./{pcre_filename}')
-        os.system(f'../Tools/pcre-build.sh > "{logs_path}/pcre_build.log" 2>&1')
+        os.system(
+            f'../Tools/pcre-build.sh > "{logs_path}/pcre_build.log" 2>&1')
 
         # For users who compile GMAT on multiple platforms side-by-side.
         # Running Windows configure.bat causes Mac/Linux configure scripts
         # to have missing permissions.
         os.system('chmod u+x ../configure')
 
-        print(f'Configuring SWIG {swig_version} tool. This could take a while...')
+        print(
+            f'Configuring SWIG {swig_version} tool. This could take a while...')
         os.system(f'../configure --prefix="{swig_install_path}" > \
                     "{logs_path}/swig_configure.log" 2>&1')
 
@@ -670,7 +689,8 @@ def extract(archive: str, output_path: str = '') -> None:
     elif extension == '.bz2':
         if platform == Platform.Windows:
             with tarfile.open(archive, 'r:bz2') as tar:
-                tar.extractall(filter='data', path=output_path if output_path else '.')
+                tar.extractall(
+                    filter='data', path=output_path if output_path else '.')
         elif platform == Platform.Linux:
             os.system(f'tar xjf {archive}')
 
@@ -709,7 +729,8 @@ if __name__ == '__main__':
     print('\n*** Configuring GMAT dependencies ***\n')
 
     cspice_version = 'N0067'
-    swig_version = '4.2.0'  # 4.2.0 is required for full Python 3.12 support as per https://gmat.atlassian.net/browse/GMT-8180
+    # SWIG 4.2.0 is required for full Python 3.12 support as per https://gmat.atlassian.net/browse/GMT-8180
+    swig_version = '4.2.0'
     pcre_version = '8.45'
     java_version = '11.0.5'
     java_update = '10'
