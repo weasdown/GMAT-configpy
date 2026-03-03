@@ -143,7 +143,7 @@ def download_depends():
 
             # Download and extract Spice for Mac/Linux (32/64-bit)
             cspice_url = f'https://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/{cspice_type}_{cspice_bit}bit/packages/cspice.tar.Z'
-            os.system(f'curl {cspice_url} > cspice.tar.Z')
+            download_file(cspice_url, 'cspice.tar.Z')
             os.system('gzip -d cspice.tar.Z')
             os.system('tar -xf cspice.tar')
             os.system(f'mv cspice {cspice_dir}')
