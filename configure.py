@@ -734,7 +734,9 @@ if __name__ == '__main__':
     pcre_version = '8.45'
     java_version = '11.0.5'
     java_update = '10'
-    wx_version = '3.0.4'  # 3.2.6 is being implemented for R2025a but has several critical issues.
+    # wxWidgets 3.2.6 is being implemented for R2025a but has several critical issues.
+    # GMAT before R2025a(?) uses wxWidgets 3.0.4.
+    wx_version = '3.2.6'  # '3.0.4'
     wx_version_folder = f'wxWidgets-{wx_version}'
     xerces_version = '3.2.2'
     osx_min_version = '10.15'
