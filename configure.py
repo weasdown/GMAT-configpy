@@ -249,7 +249,7 @@ def download_depends():
     print('\nDependencies download complete!')
 
 
-def make_depend(dependency: str, install_type: str):
+def make_depend(dependency: str, install_type: str, debug: bool = False):
     dep_l = dependency.lower()  # convert name to lowercase
     install = 'install ' if 'install' in install_type else ''
     j_cores = f'-j{num_cores}'
@@ -259,7 +259,8 @@ def make_depend(dependency: str, install_type: str):
                     )
 
     try:
-        print(f'Running "{make_command}" in "{os.getcwd()}"')
+        if debug:
+            print(f'Running "{make_command}" in "{os.getcwd()}"')
         _run_command(make_command)
         # subprocess.run(make_command.split(' '),
         #                capture_output=True,
