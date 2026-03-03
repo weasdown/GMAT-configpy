@@ -76,7 +76,7 @@ def download_depends():
 
         # Download and extract xerces
         print(f'\nDownloading Xerces-C {xerces_version}...')
-        xerces_url: str = f'http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-{xerces_version}.tar.gz'
+        xerces_url: str = f'https://archive.apache.org/dist/xerces/c/3/sources/xerces-c-{xerces_version}.tar.gz'
         download_file(xerces_url, 'xerces.tar.gz')
         with tarfile.open('xerces.tar.gz', 'r:gz') as tar:
             tar.extractall(filter='data')
