@@ -13,6 +13,14 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "setup_xerces.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/setup_xerces.py",
+            "cwd": "${workspaceFolder}/../gmat-git/depends",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",

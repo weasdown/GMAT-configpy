@@ -9,12 +9,12 @@ import sys
 import tarfile
 
 
-def run_command(command: str, capture_output: bool = False, check: bool = False, shell: bool = False, stdin: subprocess._FILE = None, stdout: subprocess._FILE = None, stderr: subprocess._FILE = None, text: bool = False, debug: bool = True) -> subprocess.CompletedProcess:
+def run_command(command: str, capture_output: bool = False, check: bool = False, stdin: subprocess._FILE = None, stdout: subprocess._FILE = None, stderr: subprocess._FILE = None, text: bool = False, debug: bool = False) -> subprocess.CompletedProcess:
     """Runs a shell command and returns its `subprocess.CompletedProcess`."""
     if debug:
         print(f'Running command "{command}" in "{os.getcwd()}"')
-    process: subprocess.CompletedProcess = subprocess.run(command.split(
-        ' '), capture_output=capture_output, check=check, shell=shell, stdout=stdout, stderr=stderr, text=text)
+    process: subprocess.CompletedProcess = subprocess.run(
+        command, capture_output=capture_output, check=check, shell=True, stdout=stdout, stderr=stderr, text=text)
     return process
 
 
@@ -22,7 +22,7 @@ class _Directories:
     def __init__(self) -> None:
         """Defines useful directories."""
         _user = run_command('whoami', capture_output=True,
-                            text=True, debug=True).stdout.rstrip()
+                            text=True).stdout.rstrip()
 
         self._gmat: Path = Path(f'/home/{_user}/dev/non-OH/gmat/GMAT-R2025a')
         self._gmat_git: Path = Path(f'/home/{_user}/dev/non-OH/gmat/gmat-git')
@@ -152,12 +152,10 @@ def rm(item: Path, is_directory: bool = False, force: bool = False, debug: bool 
         force_arg: str = 'f' if force else ''
         process = run_command(
             f'rm -r{force_arg} {str(item.name)}', debug=debug)
-        print(process.stdout)
     else:
         force_arg: str = '-f' if force else ''
         process = run_command(
             f'rm {force_arg} {str(item.name)}', debug=debug)
-        print(process.stdout)
 
 
 def set_env_variables() -> None:
