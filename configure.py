@@ -1,3 +1,5 @@
+# Downloads and compiles all core GMAT dependencies.
+
 import os
 import platform as mac_plat
 import shutil
