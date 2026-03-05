@@ -324,7 +324,8 @@ def build_xerces():
     # TODO remove old implementation
     def old() -> None:
         if platform == Platform.Windows:
-            raise RuntimeError('Building Xerces for Windows should have already been handled!')
+            raise RuntimeError(
+                'Building Xerces for Windows should have already been handled!')
 
         # Out-of-source xerces build/install locations
         elif platform == Platform.macOS:
@@ -683,7 +684,8 @@ def build_cspice():
         print('Compiling CSPICE release library. This could take a while...')
         release_tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
         os.environ['TKCOMPILEOPTIONS'] = release_tk_compile_options
-        mk_product_command = f'./mkprodct.csh'  # > "{logs_path}/cspice_build_release.log" 2>&1'
+        # > "{logs_path}/cspice_build_release.log" 2>&1'
+        mk_product_command = f'./mkprodct.csh'
         make_flag = _run_command(mk_product_command)
 
         if make_flag != 0:
