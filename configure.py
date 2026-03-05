@@ -783,7 +783,10 @@ if __name__ == '__main__':
     vc_major_version: str = '14'
     vc_minor_version: str = '1'
 
-    gmat_path: Path = Path(os.path.dirname(os.getcwd()))  # Path to gmat folder
+    # TODO remove old definition of gmat_path
+    gmat_path: Path = Path(os.path.dirname(os.getcwd())
+                           ).absolute()  # Path to gmat folder
+    # gmat_path: Path = u.directories.gmat_git  # Path to gmat-git folder
     depends: Path = gmat_path / 'depends'  # Path to depends folder
     logs_path: Path = depends / 'logs'  # Path to depends/logs folder
 
