@@ -287,6 +287,14 @@ def build_xerces():
         raise FileNotFoundError(f'Xerces build cannot begin because the xerces folder was not found.'
                                 f'\nCurrent working directory: {os.getcwd()}')
 
+    # Find a test file to check if xerces has already been installed
+    xerces_test_file: Path = xerces_install_path / 'lib/libxerces-c.a'
+
+    # Build xerces if the test file doesn't already exist
+    if os.path.exists(xerces_test_file):
+        print(f'Xerces {xerces_version} already configured')
+        return
+
     print(f'\n********** Configuring Xerces-C++ {xerces_version} **********')
 
     # depends: Path = u.directories.depends
