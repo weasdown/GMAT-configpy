@@ -278,6 +278,10 @@ def make_depend(dependency: str, install_type: str, debug: bool = False):
 
 
 def build_xerces():
+    # # FIXME: make cross-platform
+    xerces_build_path = xerces_path / 'linux-build'
+    xerces_install_path = xerces_path / 'linux-install'
+
     if not os.path.exists(xerces_path):
         raise FileNotFoundError(f'Xerces build cannot begin because the xerces folder was not found.'
                                 f'\nCurrent working directory: {os.getcwd()}')
@@ -312,70 +316,135 @@ def build_xerces():
 
         return
 
-    # Out-of-source xerces build/install locations
-    elif platform == Platform.macOS:
-        xerces_build_path = f'{xerces_path}/cocoa-build'
-        xerces_install_path = f'{xerces_path}/cocoa-install'
+    # TODO remove old implementation
+    def old() -> None:
+        if platform == Platform.Windows:
+            raise RuntimeError('Building Xerces for Windows should have already been handled!')
 
-    # Linux-specific build
-    else:
-        xerces_build_path = f'{xerces_path}/linux-build'
-        xerces_install_path = f'{xerces_path}/linux-install'
+        # Out-of-source xerces build/install locations
+        elif platform == Platform.macOS:
+            xerces_build_path = f'{xerces_path}/cocoa-build'
+            xerces_install_path = f'{xerces_path}/cocoa-install'
 
-    # Find a test file to check if xerces has already been installed
-    xerces_test_file = f'{xerces_install_path}/lib/libxerces-c.a'
+        # Linux-specific build
+        else:
+            xerces_build_path = f'{xerces_path}/linux-build'
+            xerces_install_path = f'{xerces_path}/linux-install'
 
-    # Build xerces if the test file doesn't already exist
-    if os.path.exists(xerces_test_file):
-        print(f'Xerces {xerces_version} already configured')
-        return
+        # Find a test file to check if xerces has already been installed
+        xerces_test_file = f'{xerces_install_path}/lib/libxerces-c.a'
 
-    # Create build and install directories.
+        # Build xerces if the test file doesn't already exist
+        if os.path.exists(xerces_test_file):
+            print(f'Xerces {xerces_version} already configured')
+            return
+
+        # Create build and install directories.
+        os.makedirs(xerces_build_path, exist_ok=True)
+        os.makedirs(xerces_install_path, exist_ok=True)
+
+        os.chdir(xerces_build_path)  # Switch to buid directory.
+
+        # For users who compile GMAT on multiple platforms side-by-side.
+        # Running Windows configure.bat causes Mac/Linux configure scripts
+        # to have missing permissions.
+        os.system('chmod u+x ../configure')
+        os.system('chmod u+x ../config/*')
+
+        # Xerces needs flags on OSX
+        macos_flags = '' if platform != Platform.macOS else \
+            f'-mmacosx-version-min={osx_min_version} --sysroot={osx_sdk}'
+
+        common_xerces_flags = ('--disable-shared --disable-netaccessor-curl'
+                               ' --disable-transcoder-icu --disable-msgloader-icu')
+
+        print(
+            f'Configuring Xerces {xerces_version} debug library. This could take a while...')
+        common_c_flags = f'-O0 -g -fPIC {macos_flags}'
+
+        debug_configure_command = f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" > "{logs_path}/xerces_configure_debug.log" 2>&1'
+        os.system(debug_configure_command)
+
+        make_depend('xerces', 'build_debug')
+        make_depend('xerces', 'install_debug')
+
+        os.rename(f'{xerces_install_path}/lib/libxerces-c.a',
+                  f'{xerces_install_path}/lib/libxerces-cd.a')
+        os.system('make clean > /dev/null 2>&1')
+
+        print(
+            f'Configuring Xerces {xerces_version} release library. This could take a while...')
+        common_c_flags = f'-O2 -fPIC {macos_flags}'
+        release_configure_command = f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" \
+                                CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" \
+                                > "{logs_path}/xerces_configure_release.log" 2>&1'
+        os.system(release_configure_command)
+
+        make_depend('xerces', 'build_release')
+        make_depend('xerces', 'install_release')
+
+        os.chdir('..')
+        os.system(f'rm -Rf {xerces_build_path}')
+
+    depends: Path = u.directories.depends
+
+    # Make build and install directories
     os.makedirs(xerces_build_path, exist_ok=True)
     os.makedirs(xerces_install_path, exist_ok=True)
 
-    os.chdir(xerces_build_path)  # Switch to buid directory.
+    # Set and make path for logs.
+    logs_path = depends / 'logs' / 'xerces'
+    os.makedirs(logs_path, exist_ok=True)
 
-    # For users who compile GMAT on multiple platforms side-by-side.
-    # Running Windows configure.bat causes Mac/Linux configure scripts
-    # to have missing permissions.
-    os.system('chmod u+x ../configure')
-    os.system('chmod u+x ../config/*')
+    # Extra flags needed for macOS.
+    macos_flags = '' if Platform.current() != Platform.macOS \
+        else f'-mmacosx-version-min={osx_min_version} --sysroot={osx_sdk}'
 
-    # Xerces needs flags on OSX
-    macos_flags = '' if platform != Platform.macOS else \
-        f'-mmacosx-version-min={osx_min_version} --sysroot={osx_sdk}'
+    def build_xerces(configuration: str) -> None:
+        # C flags for debug and release versions of Xerces.
+        if configuration == 'debug':
+            flags = f'-O0 -g -fPIC {macos_flags}'
+        elif configuration == 'release':
+            flags = f'-O2 -fPIC {macos_flags}'
+        else:
+            raise AttributeError(
+                f'Configuration "{configuration}" is not recognised for Xerces. Please use "debug" or "release".')
 
-    common_xerces_flags = ('--disable-shared --disable-netaccessor-curl'
-                           ' --disable-transcoder-icu --disable-msgloader-icu')
+        # Configure and make/make install commands must be run in build path.
+        u.cd(xerces_build_path)
 
-    print(
-        f'Configuring Xerces {xerces_version} debug library. This could take a while...')
-    common_c_flags = f'-O0 -g -fPIC {macos_flags}'
+        # Configure Xerces.
+        print(
+            f'\nConfiguring Xerces {xerces_version} {configuration} library. This could take a while...')
+        configure_command = f'../configure --disable-shared --disable-netaccessor-curl --disable-transcoder-icu --disable-msgloader-icu CFLAGS="{flags}" CXXFLAGS="{flags}" --prefix="{str(depends)}/xerces/linux-install" > "{logs_path}/xerces_configure_{configuration}.log" 2>&1'
+        subprocess.run(configure_command, capture_output=True, shell=True)
 
-    debug_configure_command = f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" > "{logs_path}/xerces_configure_debug.log" 2>&1'
-    os.system(debug_configure_command)
+        # Make Xerces.
+        print(f'\nMaking {configuration} library...\n')
+        subprocess.run(
+            f'make -j4 > "{logs_path}/xerces_make_{configuration}.log" 2>&1', capture_output=True, shell=True)
 
-    make_depend('xerces', 'build_debug')
-    make_depend('xerces', 'install_debug')
+        # Make install Xerces.
+        print(f'Make installing {configuration} library...\n')
+        subprocess.run(
+            f'make install -j4 > "{logs_path}/xerces_make_install_{configuration}.log" 2>&1', capture_output=True,
+            shell=True)
 
+    build_xerces('debug')  # Build debug configuration.
+
+    # Rename debug library file to avoid being overwritten when making release configuration.
     os.rename(f'{xerces_install_path}/lib/libxerces-c.a',
               f'{xerces_install_path}/lib/libxerces-cd.a')
-    os.system('make clean > /dev/null 2>&1')
 
-    print(
-        f'Configuring Xerces {xerces_version} release library. This could take a while...')
-    common_c_flags = f'-O2 -fPIC {macos_flags}'
-    release_configure_command = f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" \
-                CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" \
-                > "{logs_path}/xerces_configure_release.log" 2>&1'
-    os.system(release_configure_command)
+    # Clean build to prepare for making release configuration.
+    subprocess.run('make clean > /dev/null 2>&1',
+                   capture_output=True, shell=True)
 
-    make_depend('xerces', 'build_release')
-    make_depend('xerces', 'install_release')
+    build_xerces('release')  # Build release configuration.
 
-    os.chdir('..')
-    os.system(f'rm -Rf {xerces_build_path}')
+    # Remove build folder - no longer required.
+    os.chdir(depends)
+    u.rm(xerces_build_path)
 
 
 def build_wxwidgets():
@@ -720,13 +789,6 @@ def _run_command(command: str) -> int:
                           capture_output=True,
                           # check=True, text=True,
                           shell=True).returncode
-
-
-# TODO use to set PLATFORM_NAME
-class Platform(Enum):
-    Windows = 'win32'
-    macOS = 'macosx'
-    Linux = 'linux'
 
 
 if __name__ == '__main__':
