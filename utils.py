@@ -160,16 +160,6 @@ def rm(item: Path, is_directory: bool = False, force: bool = False, debug: bool 
 
 def set_env_variables() -> None:
     """Sets convenience environment variables for GMAT configuring."""
-    # user = run_command('whoami', capture_output=True,
-    #                    text=True, debug=True).stdout.rstrip()
-    # print(f'user: {user}\n')
-    # set_variables_command = f'{os.environ['GMAT_GIT']}/gmat-install-scripts/set-variables.sh'
-    # process = run_command(set_variables_command,
-    #                       text=True, shell=True, stdout=subprocess.PIPE, debug=True)
-    # print(f'stdout: "{process.stdout}"')
-    # print(f'stderr: "{process.stderr}"')
-    # return process.returncode
-
     directories._set_variables()
     print('All environment variables set.')
 
