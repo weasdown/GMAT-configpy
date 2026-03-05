@@ -130,7 +130,8 @@ def extract(archive: Path, output_path: str = '') -> None:
         if platform == Platform.Windows:
             raise not_implemented_on_platform
         else:  # Linux or macOS
-            run_command(f'tar zxf {archive}')
+            with tarfile.open(archive, 'r:gz') as tar:
+                tar.extractall(filter='data')
 
     else:
         raise ValueError(f'Archives with the "{extension}" extension cannot be extracted using extract().\n'
