@@ -108,10 +108,10 @@ def download_depends():
             # Download wxWidgets source
             print(f'\nDownloading wxWidgets {wx_version}...')
             wx_url: str = f'https://github.com/wxWidgets/wxWidgets/releases/download/v{wx_version}/wxWidgets-{wx_version}.tar.bz2'
-            wx_save_file: str = 'wxWidgets.tar.bz2'
-            download_file(wx_url, wx_save_file)
+            wx_save_file: Path = Path('wxWidgets.tar.bz2')
+            download_file(wx_url, str(wx_save_file))
             u.extract(wx_save_file)
-            os.remove(wx_save_file)
+            u.rm(wx_save_file)
 
             # Make sure wxWidgets was downloaded
             if not os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
@@ -136,8 +136,9 @@ def download_depends():
         if platform == Platform.Windows:
             # Download and extract Spice for Windows (32/64-bit)
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
-            download_file(cspice_url, 'cspice.zip')
-            u.extract('cspice.zip')
+            save_name: Path = Path('cspice.zip')
+            download_file(cspice_url, str(save_name))
+            u.extract(save_name)
             # FIXME: folder name not being set correctly (not cspice64)
             os.rename('cspice', f'{cspice_dir}')
             os.remove('cspice.zip')
@@ -173,11 +174,12 @@ def download_depends():
         # Windows build
         if platform == Platform.Windows:
             # Download and extract SWIG for Windows
+            save_name: Path = Path('swig.zip')
             download_file(
-                f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip', 'swig.zip')
-            u.extract('swig.zip')
+                f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip', str(save_name))
+            u.extract(save_name)
             os.rename(f'swigwin-{swig_version}', 'swigwin')
-            os.remove('swig.zip')
+            os.remove(save_name)
 
         # macOS or Linux build
         else:
@@ -220,13 +222,13 @@ def download_depends():
         java_base_url = f'https://github.com/AdoptOpenJDK/openjdk{java_major_version}-binaries/releases/download/jdk-{java_full_version}'
         extension: str = 'zip' if platform == Platform.Windows else 'tar.gz'
         java_url = f'{java_base_url}/OpenJDK{java_major_version}U-jdk_x64_{java_os_name}_hotspot_{java_version}_{java_update}.{extension}'
-        downloaded_file: str = f'jdk.{extension}'
+        downloaded_file: Path = Path(f'jdk.{extension}')
 
         print(f'\nDownloading Java JDK {java_full_version}...')
         # Windows download
         if platform == Platform.Windows:
             # Download and extract AdoptOpenJDK for Windows
-            download_file(java_url, downloaded_file)
+            download_file(java_url, str(downloaded_file))
 
             # Extract the downloaded zip to a folder with the full version number as its name
             u.extract(downloaded_file, f'jdk-{java_full_version}')
@@ -864,7 +866,7 @@ if __name__ == '__main__':
 
     cspice_path = f'{depends_path}/cspice/{PLATFORM_NAME}'
 
-    java_path = f'{java_path}/{PLATFORM_NAME}'
+    java_path = Path(f'{java_path}/{PLATFORM_NAME}')
 
     if struct.calcsize("P") * 8 == 32:
         # TODO Fill with any lines that ask about CPU bit-ness
