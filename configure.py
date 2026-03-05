@@ -110,7 +110,7 @@ def download_depends():
             wx_url: str = f'https://github.com/wxWidgets/wxWidgets/releases/download/v{wx_version}/wxWidgets-{wx_version}.tar.bz2'
             wx_save_file: str = 'wxWidgets.tar.bz2'
             download_file(wx_url, wx_save_file)
-            extract(wx_save_file)
+            u.extract(wx_save_file)
             os.remove(wx_save_file)
 
             # Make sure wxWidgets was downloaded
@@ -137,7 +137,7 @@ def download_depends():
             # Download and extract Spice for Windows (32/64-bit)
             cspice_url: str = f'http://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/PC_Windows_VisualC_{cspice_bit}bit/packages/cspice.zip'
             download_file(cspice_url, 'cspice.zip')
-            extract('cspice.zip')
+            u.extract('cspice.zip')
             # FIXME: folder name not being set correctly (not cspice64)
             os.rename('cspice', f'{cspice_dir}')
             os.remove('cspice.zip')
@@ -175,7 +175,7 @@ def download_depends():
             # Download and extract SWIG for Windows
             download_file(
                 f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip', 'swig.zip')
-            extract('swig.zip')
+            u.extract('swig.zip')
             os.rename(f'swigwin-{swig_version}', 'swigwin')
             os.remove('swig.zip')
 
@@ -229,7 +229,7 @@ def download_depends():
             download_file(java_url, downloaded_file)
 
             # Extract the downloaded zip to a folder with the full version number as its name
-            extract(downloaded_file, f'jdk-{java_full_version}')
+            u.extract(downloaded_file, f'jdk-{java_full_version}')
             os.rename(f'jdk-{java_full_version}', 'jdk')
             os.remove(downloaded_file)
 
@@ -670,52 +670,49 @@ def build_swig():
         os.system(f'rm -Rf {swig_build_path}')
 
 
-def extract(archive: str, output_path: str = '') -> None:
-    """
-    Unzips a .zip or .tar file in a given directory to the current directory, or to a given output directory if specified.
-
-    .tar files can be .tar, .tar.gz or .tar.bz2.
-
-    :param archive: an archive file to extract.
-    :type archive: str
-
-    :param output_path: an optional path to extract the archive to that if given must be relative to the current working directory. Defaults to the current working directory.
-    :type output_path: str
-
-    :return: None
-    :rtype: NoneType
-    """
-    filename, extension = os.path.splitext(archive)
-
-    if extension == '.zip':
-        if platform == Platform.Windows:
-            seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
-            output_path_arg: str = '' if output_path is None else f'-o"./{output_path}" '
-            os.system(f'{seven_zip_exe} x {archive} -r {output_path_arg}> nul')
-
-    elif extension == '.bz2':
-        if platform == Platform.Windows:
-            with tarfile.open(archive, 'r:bz2') as tar:
-                tar.extractall(
-                    filter='data', path=output_path if output_path else '.')
-        elif platform == Platform.Linux:
-            os.system(f'tar xjf {archive}')
-
-    elif extension == '.gz':
-        raise NotImplementedError
-        # os.system('gzip -d jdk.tar.gz')
-        # os.system('tar -xf jdk.tar')
-
-    else:
-        raise ValueError(f'Archives with the "{extension}" extension cannot be extracted using extract().\n'
-                         f'\nExtraction variables in extract():\n'
-                         f'\t- archive: "{archive}"\n'
-                         f'\t- extension: "{extension}"\n'
-                         f'\t- output_path: "{output_path}"\n')
-
-
-def download_file(url: str, save_name: str) -> None:
-    os.system(f'wget -q --show-progress -O {save_name} {url}')
+# # TODO remove old implementation
+# def extract(archive: str, output_path: str = '') -> None:
+#     """
+#     Unzips a .zip or .tar file in a given directory to the current directory, or to a given output directory if specified.
+#
+#     .tar files can be .tar, .tar.gz or .tar.bz2.
+#
+#     :param archive: an archive file to extract.
+#     :type archive: str
+#
+#     :param output_path: an optional path to extract the archive to that if given must be relative to the current working directory. Defaults to the current working directory.
+#     :type output_path: str
+#
+#     :return: None
+#     :rtype: NoneType
+#     """
+#     filename, extension = os.path.splitext(archive)
+#
+#     if extension == '.zip':
+#         if platform == Platform.Windows:
+#             seven_zip_exe = f'{depends_path}/bin/7za/7za.exe'
+#             output_path_arg: str = '' if output_path is None else f'-o"./{output_path}" '
+#             os.system(f'{seven_zip_exe} x {archive} -r {output_path_arg}> nul')
+#
+#     elif extension == '.bz2':
+#         if platform == Platform.Windows:
+#             with tarfile.open(archive, 'r:bz2') as tar:
+#                 tar.extractall(
+#                     filter='data', path=output_path if output_path else '.')
+#         elif platform == Platform.Linux:
+#             os.system(f'tar xjf {archive}')
+#
+#     elif extension == '.gz':
+#         raise NotImplementedError
+#         # os.system('gzip -d jdk.tar.gz')
+#         # os.system('tar -xf jdk.tar')
+#
+#     else:
+#         raise ValueError(f'Archives with the "{extension}" extension cannot be extracted using extract().\n'
+#                          f'\nExtraction variables in extract():\n'
+#                          f'\t- archive: "{archive}"\n'
+#                          f'\t- extension: "{extension}"\n'
+#                          f'\t- output_path: "{output_path}"\n')
 
 
 def _run_command(command: str) -> int:
