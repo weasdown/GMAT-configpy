@@ -77,7 +77,7 @@ def download_depends():
             print('Xerces already downloaded')
             return
 
-        os.chdir(depends_path)
+        os.chdir(depends)
 
         # Download and extract xerces
         print(f'\nDownloading Xerces-C {xerces_version}...')
@@ -165,8 +165,8 @@ def download_depends():
             return
 
         # Create & change directories
-        os.chdir(depends_path)
-        os.makedirs(f'{depends_path}/swig', exist_ok=True)
+        os.chdir(depends)
+        os.makedirs(f'{depends}/swig', exist_ok=True)
         os.makedirs(swig_path, exist_ok=True)  # Duplication?
         os.chdir(swig_path)
 
@@ -290,6 +290,9 @@ def build_xerces():
 
     print(f'\n********** Configuring Xerces-C++ {xerces_version} **********')
 
+    # depends: Path = u.directories.depends
+    logs_path = depends / 'logs' / 'xerces'
+
     # Windows-specific build
     if platform == Platform.Windows:
         xerces_outdir = f'{xerces_path}/windows-install'
@@ -388,14 +391,11 @@ def build_xerces():
         os.chdir('..')
         os.system(f'rm -Rf {xerces_build_path}')
 
-    depends: Path = u.directories.depends
-
     # Make build and install directories
     os.makedirs(xerces_build_path, exist_ok=True)
     os.makedirs(xerces_install_path, exist_ok=True)
 
     # Set and make path for logs.
-    logs_path = depends / 'logs' / 'xerces'
     os.makedirs(logs_path, exist_ok=True)
 
     # Extra flags needed for macOS.
@@ -643,7 +643,7 @@ def build_cspice():
         compile_cspice('debug')
         compile_cspice('release')
 
-        os.chdir(depends_path)
+        os.chdir(depends)
 
         return
 
@@ -817,19 +817,19 @@ if __name__ == '__main__':
     vc_minor_version = '1'
 
     gmat_path: Path = Path(os.path.dirname(os.getcwd()))  # Path to gmat folder
-    depends_path: Path = gmat_path / 'depends'  # Path to depends folder
-    logs_path: Path = depends_path / 'logs'  # Path to depends/logs folder
+    depends: Path = gmat_path / 'depends'  # Path to depends folder
+    logs_path: Path = depends / 'logs'  # Path to depends/logs folder
 
     # Create path variables
-    bin_path: Path = depends_path / 'bin'
-    f2c_path: Path = depends_path / 'f2c'
+    bin_path: Path = depends / 'bin'
+    f2c_path: Path = depends / 'f2c'
     cspice_path: str  # cspice_path is defined per platform below
-    swig_path: Path = depends_path / 'swig'
-    java_path: Path = depends_path / 'java'
-    wxWidgets_path: Path = depends_path / 'wxWidgets'
-    xerces_path: Path = depends_path / 'xerces'
-    sofa_path: Path = depends_path / 'sofa'
-    tsplot_path: Path = depends_path / 'tsPlot'
+    swig_path: Path = depends / 'swig'
+    java_path: Path = depends / 'java'
+    wxWidgets_path: Path = depends / 'wxWidgets'
+    xerces_path: Path = depends / 'xerces'
+    sofa_path: Path = depends / 'sofa'
+    tsplot_path: Path = depends / 'tsPlot'
 
     # Create log directory
     if not os.path.exists(logs_path):
@@ -864,7 +864,7 @@ if __name__ == '__main__':
             swig_platform_name = 'linux'
             wx_ext = 'so'
 
-    cspice_path = f'{depends_path}/cspice/{PLATFORM_NAME}'
+    cspice_path = f'{depends}/cspice/{PLATFORM_NAME}'
 
     java_path = Path(f'{java_path}/{PLATFORM_NAME}')
 
