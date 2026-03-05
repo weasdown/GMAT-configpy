@@ -747,11 +747,19 @@ def build_swig():
         os.system(f'rm -Rf {swig_build_path}')
 
 
-def _run_command(command: str) -> int:
-    return subprocess.run(command.split(' '),
-                          capture_output=True,
-                          # check=True, text=True,
-                          shell=True).returncode
+def _run_command(command: str, log: Path | None = None) -> int:
+    if log:
+        with open(log, 'wb') as f:
+            p = subprocess.run(command.split(' '),
+                               stdout=f, stderr=f,  # check=True, text=True,
+                               shell=True)
+            return p.returncode
+
+    else:
+        return subprocess.run(command.split(' '),
+                              capture_output=True,
+                              # check=True, text=True,
+                              shell=True).returncode
 
 
 if __name__ == '__main__':
