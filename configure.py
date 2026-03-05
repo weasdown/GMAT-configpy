@@ -48,7 +48,6 @@ def setup_windows():
             f'Visual Studio version not recognised - {vs_version}.')
 
     vs_env_command = f'\"{syscall}\" {vs_arch} & set > vsEnvironment.txt'
-    print(f'Running {vs_env_command}')
     os.system(vs_env_command)
 
     # Now parse the VC environment
@@ -470,7 +469,7 @@ def build_wxwidgets():
 
     # Windows-specific build
     if platform == Platform.Windows:
-        wx_path: str = f'{wxWidgets_path}/{wx_version_folder}'
+        wx_path: Path = wxWidgets_path/wx_version_folder
 
         if not os.path.exists(wx_path):
             raise FileNotFoundError(
@@ -534,11 +533,11 @@ def build_wxwidgets():
     # macOS or Linux build
     else:
         # Set build path based on version
-        wx_path = f'{wxWidgets_path}/wxWidgets-{wx_version}'
+        wx_path: Path = wxWidgets_path/f'wxWidgets-{wx_version}'
 
-        wx_build_path = f'{wx_path}/{wx_platform_name}-build'
-        wx_install_path = f'{wx_path}/{wx_platform_name}-install'
-        wx_test_file = f'{wx_install_path}/lib/libwx_baseu-3.0.{wx_ext}'
+        wx_build_path: Path = wx_path / f'{wx_platform_name}-build'
+        wx_install_path: Path = wx_path / f'{wx_platform_name}-install'
+        wx_test_file: Path = wx_install_path / f'lib/libwx_baseu-3.0.{wx_ext}'
 
         # Build wxWidgets if the test file doesn't already exist
         # Note that according to
@@ -554,7 +553,6 @@ def build_wxwidgets():
 
         os.makedirs(wx_build_path, exist_ok=True)
         os.makedirs(wx_install_path, exist_ok=True)
-        print(f'Switching to {wx_build_path}')
         os.chdir(wx_build_path)
 
         print(
@@ -577,7 +575,6 @@ def build_wxwidgets():
                            f'--with-macosx-sdk={osx_sdk}')
 
         prefix = Path(wx_install_path)
-        print(f'prefix path: "{prefix}"')
         if not prefix.exists():  # Check prefix directory exists
             raise FileNotFoundError(
                 f'prefix directory {prefix} must exist for wxWidgets configure command.')
@@ -587,8 +584,6 @@ def build_wxwidgets():
             # TODO reinstate or remove logging for wxWidgets configure command
             # f' > "{log_path}" 2>&1'
         )
-        print(f'wxWidgets configure command: "{wxwidgets_configure_command}"')
-        print(f'Running "{wxwidgets_configure_command}" in "{os.getcwd()}"')
         try:
             _run_command(wxwidgets_configure_command)
             # subprocess.run(wxwidgets_configure_command.split(' '),
@@ -605,7 +600,7 @@ def build_wxwidgets():
         # FIXME not installing into gtk-install folder like it does when running directly through terminal.
         make_depend('wxWidgets', 'install')
         os.chdir(wx_path)
-        os.system(f'rm -rf "{wx_build_path}"')
+        u.rm(wx_build_path)
 
     print('-- wxWidgets build complete!')
 
@@ -763,15 +758,13 @@ if __name__ == '__main__':
     java_update = '10'
     # wxWidgets 3.2.6 is being implemented for R2025a but has several critical issues.
     # GMAT before R2025a(?) uses wxWidgets 3.0.4.
-    wx_version = '3.2.6'  # '3.0.4'
-    wx_version_folder = f'wxWidgets-{wx_version}'
-    xerces_version = '3.2.2'
-    osx_min_version = '10.15'
-    osx_sdk = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk'
-    vs_version = 2022
-    vs_major_version = '17'
-    vc_major_version = '14'
-    vc_minor_version = '1'
+    wx_version: str = '3.2.6'  # '3.0.4'
+    wx_version_folder: str = f'wxWidgets-{wx_version}'
+    xerces_version: str = '3.2.2'
+    vs_version: int = 2022
+    vs_major_version: str = '17'
+    vc_major_version: str = '14'
+    vc_minor_version: str = '1'
 
     gmat_path: Path = Path(os.path.dirname(os.getcwd()))  # Path to gmat folder
     depends: Path = gmat_path / 'depends'  # Path to depends folder
