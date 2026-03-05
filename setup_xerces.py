@@ -66,6 +66,10 @@ def _compile_xerces():
 
     build_xerces('release')  # Build release configuration.
 
+    # Remove build folder - no longer required.
+    os.chdir(depends)
+    u.rm(xerces_build_path)
+
 
 def _download_xerces(version: str) -> Path:
     """Downloads the Xerces archive file."""
