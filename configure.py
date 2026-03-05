@@ -7,8 +7,11 @@ import struct
 import subprocess
 import sys
 import tarfile
-from enum import Enum
 from pathlib import Path
+
+import utils as u
+from globals import osx_min_version, osx_sdk
+from utils import download_file, set_env_variables, Platform
 
 
 # TODO copy improvements from config-cmdline.py then make config-cmdline refer to this
@@ -750,20 +753,20 @@ if __name__ == '__main__':
     vc_major_version = '14'
     vc_minor_version = '1'
 
-    gmat_path = os.path.dirname(os.getcwd())  # Path to gmat folder
-    depends_path = str(f'{gmat_path}/depends')  # Path to depends folder
-    logs_path = f'{depends_path}/logs'  # Path to depends/logs folder
+    gmat_path: Path = Path(os.path.dirname(os.getcwd()))  # Path to gmat folder
+    depends_path: Path = gmat_path / 'depends'  # Path to depends folder
+    logs_path: Path = depends_path / 'logs'  # Path to depends/logs folder
 
     # Create path variables
-    bin_path = f'{depends_path}/bin'
-    f2c_path = f'{depends_path}/f2c'
+    bin_path: Path = depends_path / 'bin'
+    f2c_path: Path = depends_path / 'f2c'
     cspice_path: str  # cspice_path is defined per platform below
-    swig_path = f'{depends_path}/swig'
-    java_path = f'{depends_path}/java'
-    wxWidgets_path = f'{depends_path}/wxWidgets'
-    xerces_path = f'{depends_path}/xerces'
-    sofa_path = f'{depends_path}/sofa'
-    tsplot_path = f'{depends_path}/tsPlot'
+    swig_path: Path = depends_path / 'swig'
+    java_path: Path = depends_path / 'java'
+    wxWidgets_path: Path = depends_path / 'wxWidgets'
+    xerces_path: Path = depends_path / 'xerces'
+    sofa_path: Path = depends_path / 'sofa'
+    tsplot_path: Path = depends_path / 'tsPlot'
 
     # Create log directory
     if not os.path.exists(logs_path):
