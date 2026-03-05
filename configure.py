@@ -732,6 +732,8 @@ class Platform(Enum):
 if __name__ == '__main__':
     print('\n*** Configuring GMAT dependencies ***\n')
 
+    set_env_variables()
+
     cspice_version = 'N0067'
     # SWIG 4.2.0 is required for full Python 3.12 support as per https://gmat.atlassian.net/browse/GMT-8180
     swig_version = '4.2.0'
