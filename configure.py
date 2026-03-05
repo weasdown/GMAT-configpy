@@ -327,10 +327,11 @@ def build_xerces():
         print(f'Xerces {xerces_version} already configured')
         return
 
-    os.makedirs(xerces_build_path, exist_ok=True)  # Create build directory.
-    # Create install directory.
+    # Create build and install directories.
+    os.makedirs(xerces_build_path, exist_ok=True)
     os.makedirs(xerces_install_path, exist_ok=True)
-    os.chdir(xerces_build_path)
+
+    os.chdir(xerces_build_path)  # Switch to buid directory.
 
     # For users who compile GMAT on multiple platforms side-by-side.
     # Running Windows configure.bat causes Mac/Linux configure scripts
