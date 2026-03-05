@@ -454,6 +454,7 @@ def build_xerces():
 
     # Remove build folder - no longer required.
     os.chdir(depends)
+    # FIXME fix not removing 'linux-build' folder. Believe is fixed now that gmat_path uses absolute path - to test.
     u.rm(xerces_build_path)
 
 
