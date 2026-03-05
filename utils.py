@@ -162,7 +162,7 @@ def rm(item: Path, is_directory: bool = False, force: bool = False, debug: bool 
 def set_env_variables() -> None:
     """Sets convenience environment variables for GMAT configuring."""
     directories._set_variables()
-    print('All environment variables set.')
+    print('All environment variables set.\n')
 
 
 if __name__ == '__main__':
