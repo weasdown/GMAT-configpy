@@ -40,8 +40,8 @@ def _compile_xerces():
         # Configure Xerces.
         print(
             f'\nConfiguring Xerces {xerces_version} {configuration} library. This could take a while...')
-        configure_debug = f'../configure --disable-shared --disable-netaccessor-curl --disable-transcoder-icu --disable-msgloader-icu CFLAGS="{flags}" CXXFLAGS="{flags}" --prefix="{str(depends)}/xerces/linux-install" > "{logs_path}/xerces_configure_{configuration}.log" 2>&1'
-        subprocess.run(configure_debug, capture_output=True, shell=True)
+        configure_command = f'../configure --disable-shared --disable-netaccessor-curl --disable-transcoder-icu --disable-msgloader-icu CFLAGS="{flags}" CXXFLAGS="{flags}" --prefix="{str(depends)}/xerces/linux-install" > "{logs_path}/xerces_configure_{configuration}.log" 2>&1'
+        subprocess.run(configure_command, capture_output=True, shell=True)
 
         # Make Xerces.
         print(f'\nMaking {configuration} library...\n')
