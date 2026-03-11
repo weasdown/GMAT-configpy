@@ -478,7 +478,7 @@ def build_wxwidgets():
 
     # Windows-specific build
     if platform == Platform.Windows:
-        wx_path: Path = wxWidgets_path/wx_version_folder
+        wx_path: Path = wxWidgets_path / wx_version_folder
 
         if not os.path.exists(wx_path):
             raise FileNotFoundError(
@@ -542,7 +542,7 @@ def build_wxwidgets():
     # macOS or Linux build
     else:
         # Set build path based on version
-        wx_path: Path = wxWidgets_path/f'wxWidgets-{wx_version}'
+        wx_path: Path = wxWidgets_path / f'wxWidgets-{wx_version}'
 
         wx_build_path: Path = wx_path / f'{wx_platform_name}-build'
         wx_install_path: Path = wx_path / f'{wx_platform_name}-install'
