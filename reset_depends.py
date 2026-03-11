@@ -42,10 +42,6 @@ def configure_argparse() -> argparse.Namespace:
 
 def delete_non_defaults(items_to_delete: list[Path]) -> None:
     """Deletes any non-default items in the depends folder."""
-    if not items_to_delete:
-        print('\nNo items to delete.')
-        return
-
     print(f'\nDeleting non-default items from {depends}...')
 
     print(f'Will delete the following: {[str(item) for item in items_to_delete]}')
@@ -90,6 +86,10 @@ if __name__ == '__main__':
         print(f'\t- {f}')
 
     to_delete: list[Path] = [f for f in contents if f not in default_contents]  # Files/directories to be deleted.
+
+    if not to_delete:
+        print('\nNo items to delete.')
+        sys.exit(0)
 
     # The user has opted to continue the deletion without first reviewing depends's contents.
     if force:
