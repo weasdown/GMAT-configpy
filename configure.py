@@ -186,10 +186,11 @@ def download_depends():
         # macOS or Linux build
         else:
             # Download and extract SWIG for Mac/Linux
+            save_name: Path = Path('swig.tar.gz')
             swig_url = f'https://downloads.sourceforge.net/project/swig/swig/swig-4.2.0/swig-4.2.0.tar.gz'
-            download_file(swig_url, 'swig.tar.gz')
             os.system('gzip -d swig.tar.gz')
             os.system('tar -xf swig.tar')
+            download_file(swig_url, str(save_name))
             os.system(f'mv swig-{swig_version} swig')
             os.remove('swig.tar')
 
