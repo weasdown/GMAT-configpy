@@ -787,6 +787,8 @@ if __name__ == '__main__':
     depends: Path = gmat_path / 'depends'  # Path to depends folder
     logs_path: Path = depends / 'logs'  # Path to depends/logs folder
 
+    print(f'Configuring GMAT dependencies in "{depends}"...\n')
+
     # Create path variables
     bin_path: Path = depends / 'bin'
     f2c_path: Path = depends / 'f2c'
