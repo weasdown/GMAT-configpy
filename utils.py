@@ -1,12 +1,12 @@
 # Utility functions for downloading and extracting archives and running commands.
 
 import os
-from enum import Enum
-from pathlib import Path
-import platform as mac_plat
+import shutil
 import subprocess
 import sys
 import tarfile
+from enum import Enum
+from pathlib import Path
 
 
 def run_command(command: str, capture_output: bool = False, check: bool = False, stdin: subprocess._FILE = None,
@@ -152,13 +152,9 @@ def rm(item: Path, is_directory: bool = False, force: bool = False, debug: bool 
 
     # # FIXME below is not working - files/folders are not deleted.
     if is_directory:
-        force_arg: str = 'f' if force else ''
-        process = run_command(
-            f'rm -r{force_arg} {str(item.name)}', debug=debug)
+        shutil.rmtree(str(item.name))
     else:
-        force_arg: str = '-f' if force else ''
-        process = run_command(
-            f'rm {force_arg} {str(item.name)}', debug=debug)
+        os.remove(item)
 
 
 def set_env_variables() -> None:
