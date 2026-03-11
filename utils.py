@@ -79,7 +79,7 @@ def cd(directory: Path, debug: bool = False) -> None:
         print(f'\nSwitched to {directory}\n')
 
 
-def download_file(url: str, save_name: str = '', log: str = '', debug: bool = False) -> int:
+def download_file(url: str, save_name: str = '', debug: bool = False) -> int:
     """Downloads a file from a url and saves it to the current working directory."""
     if debug:
         print(
