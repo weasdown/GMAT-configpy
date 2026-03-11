@@ -3,8 +3,9 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv313" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv314" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.13 (GMAT-configpy)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.14 (GMAT-configpy)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
