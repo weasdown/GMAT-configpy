@@ -183,6 +183,8 @@ def download_depends():
             os.rename(f'swigwin-{swig_version}', 'swigwin')
             os.remove(save_name)
 
+            download_complete('SWIG')
+
         # macOS or Linux build
         else:
             # Download and extract SWIG for Mac/Linux
@@ -193,13 +195,15 @@ def download_depends():
             os.system(f'mv swig-{swig_version} swig')
             os.remove(swig_path / save_name)
 
+            download_complete('SWIG')
+
             # [GMT-6892] Download PCRE into SWIG directory
             print(f'\nDownloading PCRE {pcre_version} for use with SWIG...')
             os.chdir(swig_dir)
             pcre_url: str = f'https://sourceforge.net/projects/pcre/files/pcre/{pcre_version}/{pcre_filename}/download'
             download_file(pcre_url, pcre_filename)
 
-        download_complete('SWIG')
+            download_complete('PCRE')
 
     def download_java():
         # Download Java if it doesn't already exist
