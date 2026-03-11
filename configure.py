@@ -812,13 +812,13 @@ if __name__ == '__main__':
         os.mkdir(logs_path)
 
     # Platform-based setup
-    swig_dir = f'{swig_path}/swig'
+    swig_dir: Path = swig_path / 'swig'
     match sys.platform:
         case 'win32':
             platform: Platform = Platform.Windows
             PLATFORM_NAME = 'windows'
             # noinspection PyRedeclaration
-            swig_dir = f'{swig_path}/swigwin'
+            swig_dir: Path = swig_path / 'swigwin'
             swig_platform_name = 'windows'
             setup_windows()
 
