@@ -9,7 +9,9 @@ import sys
 import tarfile
 
 
-def run_command(command: str, capture_output: bool = False, check: bool = False, stdin: subprocess._FILE = None, stdout: subprocess._FILE = None, stderr: subprocess._FILE = None, text: bool = False, debug: bool = False) -> subprocess.CompletedProcess:
+def run_command(command: str, capture_output: bool = False, check: bool = False, stdin: subprocess._FILE = None,
+                stdout: subprocess._FILE = None, stderr: subprocess._FILE = None, text: bool = False,
+                debug: bool = False) -> subprocess.CompletedProcess:
     """Runs a shell command and returns its `subprocess.CompletedProcess`."""
     if debug:
         print(f'Running command "{command}" in "{os.getcwd()}"')
@@ -26,7 +28,7 @@ class _Directories:
 
         self._gmat: Path = Path(f'/home/{_user}/dev/non-OH/gmat/GMAT-R2025a')
         self._gmat_git: Path = Path(f'/home/{_user}/dev/non-OH/gmat/gmat-git')
-        self._depends: Path = (self._gmat_git/'depends')
+        self._depends: Path = (self._gmat_git / 'depends')
 
     @property
     def depends(self) -> Path:
