@@ -97,8 +97,9 @@ if __name__ == '__main__':
 
     # No -f/--force argument was given, so we have to get the user's permission to continue the deletion.
     else:
+        item_list = ', '.join([str(item) for item in to_delete])
         check_continue: str = input(
-            '\nThe following files/directories will be deleted. Do you want to continue? [y/N] ').lower()
+            f'\nThe following files/directories will be deleted.\n\t{item_list}\nDo you want to continue? [y/N] ').lower()
 
         # Permission has been given
         if check_continue == 'y':
