@@ -177,8 +177,8 @@ def download_depends():
         if platform == Platform.Windows:
             # Download and extract SWIG for Windows
             save_name: Path = Path('swig.zip')
-            download_file(
-                f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip', str(save_name))
+            swig_url = f'http://download.sourceforge.net/swig/swigwin-{swig_version}.zip'
+            download_file(swig_url, str(save_name))
             u.extract(save_name)
             os.rename(f'swigwin-{swig_version}', 'swigwin')
             os.remove(save_name)
