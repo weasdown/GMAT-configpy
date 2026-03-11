@@ -794,7 +794,7 @@ if __name__ == '__main__':
     depends: Path = gmat_path / 'depends'  # Path to depends folder
     logs_path: Path = depends / 'logs'  # Path to depends/logs folder
 
-    print(f'Configuring GMAT dependencies in "{depends}"...')
+    print(f'Configuring GMAT dependencies in "{depends}"...\n')
 
     # Create path variables
     bin_path: Path = depends / 'bin'
@@ -866,6 +866,7 @@ if __name__ == '__main__':
     download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
 
     # Build the dependencies using CMake
+    print('\n*** Building GMAT dependencies ***\n')
     build_xerces()
     build_wxwidgets()
     build_cspice()
