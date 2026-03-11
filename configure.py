@@ -163,7 +163,6 @@ def download_depends():
         # [GMT-6892] Download PCRE into SWIG directory
         print(f'\nDownloading PCRE {pcre_version} for use with SWIG...')
         os.chdir(swig_dir)
-        pcre_filename = f'pcre-{pcre_version}.tar.gz'
         pcre_url: str = f'https://sourceforge.net/projects/pcre/files/pcre/{pcre_version}/{pcre_filename}/download'
         download_file(pcre_url, pcre_filename)
         u.rm(swig_dir / pcre_filename)
@@ -861,6 +860,7 @@ if __name__ == '__main__':
 
     # Set up dir/file names for downloaded files
     cspice_dir = f'cspice{cspice_bit}'
+    pcre_filename = f'pcre-{pcre_version}.tar.gz'
 
     # Get number of cores for multithreaded compilation
     num_cores = str(os.cpu_count())
