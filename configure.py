@@ -70,6 +70,9 @@ def setup_windows():
 def download_depends():
     """Download GMAT dependencies."""
 
+    def download_complete(name: str) -> None:
+        print(f'{name} download complete!\n')
+
     def download_xerces():
         # Download xerces if it doesn't already exist
         if os.path.exists(xerces_path):
@@ -90,7 +93,7 @@ def download_depends():
         xerces_version_folder = f'xerces-c-{xerces_version}'
         xerces_folder_simple = os.path.basename(os.path.normpath(xerces_path))
         os.rename(xerces_version_folder, xerces_folder_simple)
-        print('Xerces download complete!')
+        download_complete('Xerces')
 
     def download_wxwidgets():
         if os.path.exists(f'{wxWidgets_path}/wxWidgets-{wx_version}'):
@@ -117,7 +120,7 @@ def download_depends():
                 raise RuntimeError(
                     f'Error in wxWidgets-{wx_version} download.')
 
-            print('wxWidgets download complete!\n')
+            download_complete('wxWidgets')
 
     def download_cspice():
         # Download CSPICE if it doesn't already exist
@@ -154,7 +157,7 @@ def download_depends():
             os.system(f'mv cspice {cspice_dir}')
             os.remove('cspice.tar')
 
-        print('CSPICE download complete!\n')
+        download_complete('CSPICE')
 
     def download_swig():
         # Download SWIG if it doesn't already exist
@@ -196,7 +199,7 @@ def download_depends():
             pcre_url: str = f'https://sourceforge.net/projects/pcre/files/pcre/{pcre_version}/{pcre_filename}/download'
             download_file(pcre_url, pcre_filename)
 
-        print('SWIG download complete!')
+        download_complete('SWIG')
 
     def download_java():
         # Download Java if it doesn't already exist
@@ -244,7 +247,7 @@ def download_depends():
             os.system(f'mv jdk-{java_full_version} jdk')
             os.remove('jdk.tar')
 
-        print('Java download complete!')
+        download_complete('Java')
 
     download_xerces()
     download_wxwidgets()
