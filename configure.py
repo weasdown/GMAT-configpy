@@ -854,6 +854,8 @@ if __name__ == '__main__':
             swig_platform_name = 'linux'
             wx_ext = 'so'
 
+    # PyCharm mistakenly thinks PLATFORM_Name can be undefined.
+    # noinspection PyUnboundLocalVariable
     cspice_path = f'{depends}/cspice/{PLATFORM_NAME}'
 
     java_path = Path(f'{java_path}/{PLATFORM_NAME}')
