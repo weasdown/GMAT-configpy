@@ -59,7 +59,7 @@ def setup_windows():
             os.environ[pair[0]] = pair[1]
 
     # and delete the temporary settings file
-    os.remove('vsEnvironment.txt')
+    u.rm(Path('vsEnvironment.txt'))
 
     # Add CMake to path
     sys.path.append('C:/Program Files/CMake/bin')
@@ -87,7 +87,7 @@ def download_depends():
         download_file(xerces_url, 'xerces.tar.gz')
         with tarfile.open('xerces.tar.gz', 'r:gz') as tar:
             tar.extractall(filter='data')
-        os.remove('xerces.tar.gz')
+        u.rm(Path('xerces.tar.gz'))
 
         # Rename the extracted xerces directory to be the proper path
         xerces_version_folder = f'xerces-c-{xerces_version}'
@@ -143,7 +143,7 @@ def download_depends():
             u.extract(save_name)
             # FIXME: folder name not being set correctly (not cspice64)
             os.rename('cspice', f'{cspice_dir}')
-            os.remove('cspice.zip')
+            u.rm(Path('cspice.zip'))
 
         else:  # Platform is not Windows
             if platform == Platform.macOS:
@@ -155,7 +155,7 @@ def download_depends():
             os.system('gzip -d cspice.tar.Z')
             os.system('tar -xf cspice.tar')
             os.system(f'mv cspice {cspice_dir}')
-            os.remove('cspice.tar')
+            u.rm(Path('cspice.tar'))
 
         download_complete('CSPICE')
 
@@ -164,8 +164,7 @@ def download_depends():
         print(f'\nDownloading PCRE {pcre_version} for use with SWIG...')
         os.chdir(swig_dir)
         pcre_url: str = f'https://sourceforge.net/projects/pcre/files/pcre/{pcre_version}/{pcre_filename}/download'
-        download_file(pcre_url, pcre_filename)
-        u.rm(swig_dir / pcre_filename)
+        download_file(pcre_url, pcre_filename, debug=True)
 
         download_complete('PCRE')
 
@@ -191,7 +190,7 @@ def download_depends():
             download_file(swig_url, str(save_name))
             u.extract(save_name)
             os.rename(f'swigwin-{swig_version}', 'swigwin')
-            os.remove(save_name)
+            u.rm(save_name)
 
             download_complete('SWIG')
 
@@ -203,7 +202,7 @@ def download_depends():
             download_file(swig_url, str(save_name))
             u.extract(save_name)
             os.system(f'mv swig-{swig_version} swig')
-            os.remove(swig_path / save_name)
+            u.rm(swig_path / save_name)
 
             download_complete('SWIG')
 
@@ -243,7 +242,7 @@ def download_depends():
             # Extract the downloaded zip to a folder with the full version number as its name
             u.extract(downloaded_file, f'jdk-{java_full_version}')
             os.rename(f'jdk-{java_full_version}', 'jdk')
-            os.remove(downloaded_file)
+            u.rm(downloaded_file)
 
         # macOS or Linux download
         else:
@@ -253,7 +252,7 @@ def download_depends():
             os.system('gzip -d jdk.tar.gz')
             os.system('tar -xf jdk.tar')
             os.system(f'mv jdk-{java_full_version} jdk')
-            os.remove('jdk.tar')
+            u.rm(Path('jdk.tar'))
 
         download_complete('Java')
 
@@ -308,7 +307,6 @@ def build_xerces():
 
     print(f'\n********** Configuring Xerces-C++ {xerces_version} **********')
 
-    # depends: Path = u.directories.depends
     logs_path = depends / 'logs' / 'xerces'
 
     # Windows-specific build
@@ -421,7 +419,7 @@ def build_xerces():
     macos_flags = '' if Platform.current() != Platform.macOS \
         else f'-mmacosx-version-min={osx_min_version} --sysroot={osx_sdk}'
 
-    def build_xerces(configuration: str) -> None:
+    def build(configuration: str) -> None:
         # C flags for debug and release versions of Xerces.
         if configuration == 'debug':
             flags = f'-O0 -g -fPIC {macos_flags}'
@@ -451,7 +449,7 @@ def build_xerces():
             f'make install -j4 > "{logs_path}/xerces_make_install_{configuration}.log" 2>&1', capture_output=True,
             shell=True)
 
-    build_xerces('debug')  # Build debug configuration.
+    build('debug')  # Build debug configuration.
 
     # Rename debug library file to avoid being overwritten when making release configuration.
     os.rename(f'{xerces_install_path}/lib/libxerces-c.a',
@@ -461,7 +459,7 @@ def build_xerces():
     subprocess.run('make clean > /dev/null 2>&1',
                    capture_output=True, shell=True)
 
-    build_xerces('release')  # Build release configuration.
+    build('release')  # Build release configuration.
 
     # Remove build folder - no longer required.
     os.chdir(depends)
@@ -722,11 +720,11 @@ def build_swig():
         print('\n********** Configuring SWIG **********')
 
         # Out-of-source SWIG build/install locations
-        swig_build_path = f'{swig_dir}/{swig_platform_name}-build'
-        swig_install_path = f'{swig_dir}/{swig_platform_name}-install'
+        swig_build_path: Path = swig_dir / f'{swig_platform_name}-build'
+        swig_install_path: Path = swig_dir / f'{swig_platform_name}-install'
 
         # Find a test file to check if SWIG has already been installed
-        swig_test_file = f'{swig_install_path}/bin/swig'
+        swig_test_file: Path = swig_install_path / 'bin/swig'
 
         # Build SWIG if the test file doesn't already exist
         if os.path.exists(swig_test_file):
@@ -754,8 +752,8 @@ def build_swig():
         make_depend('SWIG', 'build')
         make_depend('SWIG', 'install')
 
-        os.chdir('..')
-        os.system(f'rm -Rf {swig_build_path}')
+        os.chdir(swig_path)
+        # u.rm(swig_build_path)
 
 
 def _run_command(command: str, log: Path | None = None) -> int:
@@ -872,7 +870,7 @@ if __name__ == '__main__':
     # Build the dependencies using CMake
     print('\n*** Building GMAT dependencies ***\n')
     build_xerces()
-    build_wxwidgets()
+    # build_wxwidgets()  # FIXME reinstate wxWidgets build
     build_cspice()
     build_swig()
 
