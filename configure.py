@@ -575,7 +575,7 @@ def build_wxwidgets():
         # we don't build a separate debug version here.
         # IF a debug version is required in the future, then this
         # if/else block should be repeated with the --enable-debug flag
-        # added to mac & linux versions of the wx ./configure command
+        # added to Mac & linux versions of the wx ./configure command
         if os.path.exists(wx_test_file):
             print(f'wxWidgets {wx_version} already configured')
             return
