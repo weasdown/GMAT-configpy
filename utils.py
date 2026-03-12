@@ -143,7 +143,7 @@ def extract(archive: Path, output_path: str = '') -> None:
                          f'\t- output_path: "{output_path}"\n')
 
 
-def rm(item: Path, is_directory: bool = False, force: bool = False, debug: bool = False) -> None:
+def rm(item: Path, debug: bool = False) -> None:
     """Removes a file or directory."""
     if debug:
         print(f'\nRemoving "{item.name}" from "{os.getcwd()}"\n')
@@ -151,10 +151,12 @@ def rm(item: Path, is_directory: bool = False, force: bool = False, debug: bool 
     # raise NotImplementedError('rm() function is not yet working.')
 
     # # FIXME below is not working - files/folders are not deleted.
-    if is_directory:
+    if item.is_dir():
         shutil.rmtree(str(item.name))
-    else:
+    elif item.is_file():
         os.remove(item)
+    else:
+        raise NotImplementedError
 
 
 def set_env_variables() -> None:
