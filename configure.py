@@ -312,7 +312,7 @@ def build_xerces():
 
     print(f'\n********** Configuring Xerces-C++ {xerces_version} **********')
 
-    logs_path = depends / 'logs' / 'xerces'
+    xerces_logs_path = depends / 'logs' / 'xerces'
 
     # Windows-specific build
     if platform == Platform.Windows:
@@ -330,15 +330,15 @@ def build_xerces():
         os.system(
             f'cmake -G "Visual Studio {vs_major_version} {str(vs_version)}" -DBUILD_SHARED_LIBS:BOOL=OFF '
             f'-Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="{xerces_outdir}" "{xerces_path}" -Wno-dev > '
-            f'"{logs_path}\\xerces_cmake.log" 2>&1')
+            f'"{xerces_logs_path}\\xerces_cmake.log" 2>&1')
 
         print('-- Compiling debug Xerces. This could take a while...')
         os.system(f'cmake --build . --config Debug --target install > \
-                    "{logs_path}\\xerces_build_debug.log" 2>&1')
+                    "{xerces_logs_path}\\xerces_build_debug.log" 2>&1')
 
         print('-- Compiling release Xerces. This could take a while...')
         os.system(f'cmake --build . --config Release --target install > '
-                  f'"{logs_path}\\xerces_build_release.log" 2>&1')
+                  f'"{xerces_logs_path}\\xerces_build_release.log" 2>&1')
 
         return
 
@@ -420,7 +420,7 @@ def build_xerces():
     os.makedirs(xerces_install_path, exist_ok=True)
 
     # Set and make path for logs.
-    os.makedirs(logs_path, exist_ok=True)
+    os.makedirs(xerces_logs_path, exist_ok=True)
 
     # Extra flags needed for macOS.
     macos_flags = '' if Platform.current() != Platform.macOS \
@@ -450,7 +450,7 @@ def build_xerces():
         # Make Xerces.
         print(f'\nMaking {configuration} library...\n')
         subprocess.run(
-            f'make -j4 > "{logs_path}/xerces_make_{configuration}.log" 2>&1', capture_output=True, shell=True)
+            f'make -j4 > "{xerces_logs_path}/xerces_make_{configuration}.log" 2>&1', capture_output=True, shell=True)
 
         # Make install Xerces.
         print(f'Make installing {configuration} library...\n')
