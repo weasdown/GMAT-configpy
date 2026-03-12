@@ -40,7 +40,9 @@ def _compile_xerces():
         # Configure Xerces.
         print(
             f'\nConfiguring Xerces {xerces_version} {configuration} library. This could take a while...')
-        configure_command = f'../configure --disable-shared --disable-netaccessor-curl --disable-transcoder-icu --disable-msgloader-icu CFLAGS="{flags}" CXXFLAGS="{flags}" --prefix="{str(depends)}/xerces/linux-install" > "{logs_path}/xerces_configure_{configuration}.log" 2>&1'
+        configure_command = (f'../configure --disable-shared --disable-netaccessor-curl --disable-transcoder-icu '
+                             f'--disable-msgloader-icu CFLAGS="{flags}" CXXFLAGS="{flags}" --prefix="{str(depends)}/'
+                             f'xerces/linux-install" > "{logs_path}/xerces_configure_{configuration}.log" 2>&1')
         subprocess.run(configure_command, capture_output=True, shell=True)
 
         # Make Xerces.
@@ -101,13 +103,13 @@ if __name__ == '__main__':
 
     # TODO add test file that if present, stops this before starting
 
-    archive = _download_xerces(xerces_version)  # Download the xerces archive.
+    xerces_archive = _download_xerces(xerces_version)  # Download the xerces archive.
 
-    _extract_xerces(archive)  # Extract the downloaded archive.
-    u.rm(archive)  # Remove downloaded archive.
+    _extract_xerces(xerces_archive)  # Extract the downloaded archive.
+    u.rm(xerces_archive)  # Remove downloaded archive.
 
     # Rename 'xerces-c-3.2.2' folder to 'xerces'.
-    versioned_folder_name = str(archive).replace(
+    versioned_folder_name = str(xerces_archive).replace(
         '.tar.gz', '')  # 'xerces-c.3.2.2'
     os.rename(versioned_folder_name, 'xerces')
 
