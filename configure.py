@@ -48,7 +48,7 @@ def setup_windows():
             f'Visual Studio version not recognised - {vs_version}.')
 
     vs_env_command = f'\"{syscall}\" {vs_arch} & set > vsEnvironment.txt'
-    u.run_command(vs_env_command)
+    u.run_command(vs_env_command, capture_output=True)
 
     # Now parse the VC environment
     with open('vsEnvironment.txt', 'r') as f:
@@ -156,9 +156,9 @@ def download_depends():
                           f'{cspice_type}_{cspice_bit}bit/packages/cspice.tar.Z')
             download_file(cspice_url, 'cspice.tar.Z')
             # TODO convert to use u.extract()
-            u.run_command('gzip -d cspice.tar.Z')
-            u.run_command('tar -xf cspice.tar')
-            u.run_command(f'mv cspice {cspice_dir}')
+            u.run_command('gzip -d cspice.tar.Z', capture_output=True)
+            u.run_command('tar -xf cspice.tar', capture_output=True)
+            u.run_command(f'mv cspice {cspice_dir}', capture_output=True)
             u.rm(Path('cspice.tar'))
 
         download_complete('CSPICE')
@@ -205,7 +205,7 @@ def download_depends():
             swig_url = f'https://downloads.sourceforge.net/project/swig/swig/swig-4.2.0/swig-4.2.0.tar.gz'
             download_file(swig_url, str(save_name))
             u.extract(save_name)
-            u.run_command(f'mv swig-{swig_version} swig')
+            u.run_command(f'mv swig-{swig_version} swig', capture_output=True)
             u.rm(swig_path / save_name)
 
             download_complete('SWIG')
@@ -255,9 +255,9 @@ def download_depends():
             # Download and extract AdoptOpenJDK for Mac/Linux
             download_file(f'{java_url}', 'jdk.tar.gz')
             # TODO use extract()
-            u.run_command('gzip -d jdk.tar.gz')
-            u.run_command('tar -xf jdk.tar')
-            u.run_command(f'mv jdk-{java_full_version} jdk')
+            u.run_command('gzip -d jdk.tar.gz', capture_output=True)
+            u.run_command('tar -xf jdk.tar', capture_output=True)
+            u.run_command(f'mv jdk-{java_full_version} jdk', capture_output=True)
             u.rm(Path('jdk.tar'))
 
         download_complete('Java')
@@ -326,15 +326,15 @@ def build_xerces():
         u.run_command(
             f'cmake -G "Visual Studio {vs_major_version} {str(vs_version)}" -DBUILD_SHARED_LIBS:BOOL=OFF '
             f'-Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="{xerces_outdir}" "{xerces_path}" -Wno-dev > '
-            f'"{xerces_logs_path}\\xerces_cmake.log" 2>&1')
+            f'"{xerces_logs_path}\\xerces_cmake.log" 2>&1', capture_output=True)
 
         print('-- Compiling debug Xerces. This could take a while...')
         u.run_command(f'cmake --build . --config Debug --target install > \
-                    "{xerces_logs_path}\\xerces_build_debug.log" 2>&1')
+                    "{xerces_logs_path}\\xerces_build_debug.log" 2>&1', capture_output=True)
 
         print('-- Compiling release Xerces. This could take a while...')
         u.run_command(f'cmake --build . --config Release --target install > '
-                      f'"{xerces_logs_path}\\xerces_build_release.log" 2>&1')
+                      f'"{xerces_logs_path}\\xerces_build_release.log" 2>&1', capture_output=True)
 
         return
 
@@ -451,10 +451,10 @@ def build_wxwidgets():
                     f' > "{logs_path}\\wxWidgets_build_{build_type}.log" 2>&1')
 
         print('-- Compiling debug wxWidgets. This could take a while...')
-        u.run_command(wxwidgets_build_command('debug'))
+        u.run_command(wxwidgets_build_command('debug'), capture_output=True)
 
         print('-- Compiling release wxWidgets. This could take a while...')
-        u.run_command(wxwidgets_build_command('release'))
+        u.run_command(wxwidgets_build_command('release'), capture_output=True)
 
         os.chdir(f'{wx_path}/lib')
 
@@ -518,7 +518,8 @@ def build_wxwidgets():
             osx_ver = mac_plat.mac_ver()[0]
             if wx_version == '3.0.2' and osx_ver > '10.10.0':  # TODO update wx_version if it's changed globally
                 u.run_command(
-                    f'sed -i.bk "s/WebKit.h/WebKitLegacy.h/" "{wx_path}/src/osx/webview_webkit.mm"')
+                    f'sed -i.bk "s/WebKit.h/WebKitLegacy.h/" "{wx_path}/src/osx/webview_webkit.mm"',
+                    capture_output=True)
 
             # wxWidgets needs these flags on OSX
             # NOTE on liblzma: The Mac build/test machine contains liblzma (via homebrew 'xz'), which conflicts with
@@ -537,7 +538,7 @@ def build_wxwidgets():
             # f' > "{log_path}" 2>&1'
         )
         try:
-            u.run_command(wxwidgets_configure_command)
+            u.run_command(wxwidgets_configure_command, capture_output=True)
             # subprocess.run(wxwidgets_configure_command.split(' '),
             #                capture_output=True,
             #                check=True, text=True,
@@ -582,11 +583,11 @@ def build_cspice():
                 f'-- Compiling {build_type} CSPICE. This could take a while...')
             u.run_command(f'cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS'
                           f' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
-                          f' "{logs_path}\\cspice_build_{build_type}.log" 2>&1')
+                          f' "{logs_path}\\cspice_build_{build_type}.log" 2>&1', capture_output=True)
             u.run_command(f'link -lib /out:..\\..\\lib\\cspiced.lib *.obj >> '
-                          f'"{logs_path}\\cspice_build_{build_type}.log" 2>&1')
+                          f'"{logs_path}\\cspice_build_{build_type}.log" 2>&1', capture_output=True)
 
-            u.run_command('del *.obj')
+            u.run_command('del *.obj', capture_output=True)
 
         compile_cspice('debug')
         compile_cspice('release')
@@ -603,7 +604,7 @@ def build_cspice():
         # Windows would have returned or thrown error so below is macOS/Linux specific
         spice_path = f'{cspice_path}/{cspice_dir}'
         tk_compile_arch = f'-m{cspice_bit}'
-        u.run_command(f'export TKCOMPILEARCH="{tk_compile_arch}"')
+        u.run_command(f'export TKCOMPILEARCH="{tk_compile_arch}"', capture_output=True)
 
         flags = '' if platform != Platform.macOS else (f' -mmacosx-version-min={osx_min_version} '
                                                        f'-Wno-error=implicit-function-declaration --sysroot={osx_sdk}')
@@ -647,7 +648,7 @@ def build_cspice():
             # Successful build.
             if p.returncode == 0:
                 if configuration == 'debug':
-                    u.run_command('mv ../../lib/cspice.a ../../lib/cspiced.a')
+                    u.run_command('mv ../../lib/cspice.a ../../lib/cspiced.a', capture_output=True)
 
                 return p
             # Build failed.
@@ -696,28 +697,24 @@ def build_swig():
         # For users who compile GMAT on multiple platforms side-by-side.
         # Running Windows configure.bat causes Mac/Linux configure scripts
         # to have missing permissions.
-        # TODO remove debug=True for all instances of u.run_command() in build_swig()
-        u.run_command('chmod u+x ../configure', debug=True)
+        u.run_command('chmod u+x ../configure', capture_output=True)
 
         print(
             f'Configuring SWIG {swig_version} tool. This could take a while...')
         u.run_command(f'../configure --prefix="{swig_install_path}" > \
-                    "{logs_path}/swig_configure.log" 2>&1', debug=True)
+                    "{logs_path}/swig_configure.log" 2>&1', capture_output=True)
 
         make_depend('SWIG', 'build')
         make_depend('SWIG', 'install')
 
         os.chdir(swig_path)
-        # u.rm(swig_build_path)
 
 
 def build_pcre():
     """Builds PCRE dependency. Only required on Linux and macOS."""
     # [GMT-6892] Build static PCRE using SWIG-provided build script
     os.rename(f'../{pcre_filename}', f'./{pcre_filename}')
-    u.run_command(
-        # TODO remove debug option
-        f'../Tools/pcre-build.sh > "{logs_path}/pcre_build.log" 2>&1', debug=True)
+    u.run_command(f'../Tools/pcre-build.sh > "{logs_path}/pcre_build.log" 2>&1', capture_output=True)
 
 
 if __name__ == '__main__':
