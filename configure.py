@@ -620,7 +620,7 @@ def build_cspice():
 
         os.chdir(f'{spice_path}/src/cspice')
 
-        def build(configuration: str) -> subprocess.CompletedProcess:
+        def build(configuration: str, debug: bool = False) -> subprocess.CompletedProcess:
             """Builds CSPICE."""
             if configuration == 'debug':
                # Compile debug CSPICE with integer uiolen [GMT-5044]
@@ -635,12 +635,18 @@ def build_cspice():
                     f'Configuration "{configuration}" is not recognised for CSPICE. Please use "debug" or "release".')
 
             os.environ['TKCOMPILEOPTIONS'] = tk_compile_options
+            if debug:
+                print(
+                    f'TKCOMPILEOPTIONS environment variable: "{os.environ['TKCOMPILEOPTIONS']}"')
 
             # > "{logs_path}/cspice_build_{configuration}.log" 2>&1' # TODO reinstate/remove log line
             mk_product_command = f'./mkprodct.csh'
             # FIXME remove debug option
             p: subprocess.CompletedProcess = u.run_command(
-                mk_product_command, debug=True, capture_output=True, text=True)
+                mk_product_command, debug=debug,
+                capture_output=True, text=True,
+                shell=True
+            )
 
             # Successful build.
             if p.returncode == 0:
@@ -653,7 +659,14 @@ def build_cspice():
                 raise RuntimeError(
                     f'CSPICE {configuration} build failed. Fix errors and try again. Error: "{p.stderr}"')
 
-        build('debug')  # Build debug configuration of CSPICE library.
+        # TODO remove print (debugging only)
+        print(f'CWD before debug compile: {os.getcwd()}')
+
+        # Build debug configuration of CSPICE library.
+        build('debug', debug=True)
+
+        # TODO remove print (debugging only)
+        print(f'CWD before release compile: {os.getcwd()}')
 
         build('release')  # Build release configuration of CSPICE library.
 
