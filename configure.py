@@ -829,8 +829,8 @@ if __name__ == '__main__':
     # Build the dependencies using CMake
     print('\n*** Building GMAT dependencies ***\n')
     build_xerces()
-    build_wxwidgets()
     build_cspice()
     build_swig()
+    build_wxwidgets()
 
     print('\n*** Done configuring GMAT dependencies ***\n')
