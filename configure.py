@@ -276,17 +276,12 @@ def make_depend(dependency: str, install_type: str, debug: bool = False):
     install = 'install ' if 'install' in install_type else ''
     j_cores = f'-j{num_cores}'
     log_path = f'{logs_path}/{dep_l}_{install_type}.log'
-    make_command = (f'make {install}{j_cores}'
-                    # f' > "{log_path}" 2>&1'  # TODO reinstate or remove logging for make command
-                    )
+    make_command = f'make {install}{j_cores} > "{log_path}" 2>&1'
 
     try:
         if debug:
             print(f'Running "{make_command}" in "{os.getcwd()}"')
-        u.run_command(make_command)
-        # subprocess.run(make_command.split(' '),
-        #                capture_output=True,
-        #                check=True, text=True, shell=True)
+        u.run_command(make_command, capture_output=True)
 
     except subprocess.CalledProcessError as cpe:
         print(f'Error returned by subprocess.run: "{cpe.stderr}"')
