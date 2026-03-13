@@ -282,7 +282,7 @@ def make_depend(dependency: str, install_type: str, debug: bool = False):
     try:
         if debug:
             print(f'Running "{make_command}" in "{os.getcwd()}"')
-        _run_command(make_command)
+        u.run_command(make_command)
         # subprocess.run(make_command.split(' '),
         #                capture_output=True,
         #                check=True, text=True, shell=True)
@@ -541,7 +541,7 @@ def build_wxwidgets():
             # f' > "{log_path}" 2>&1'
         )
         try:
-            _run_command(wxwidgets_configure_command)
+            u.run_command(wxwidgets_configure_command)
             # subprocess.run(wxwidgets_configure_command.split(' '),
             #                capture_output=True,
             #                check=True, text=True,
@@ -636,9 +636,9 @@ def build_cspice():
         print('Compiling CSPICE release library. This could take a while...')
         release_tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
         os.environ['TKCOMPILEOPTIONS'] = release_tk_compile_options
-        # > "{logs_path}/cspice_build_release.log" 2>&1'
-        mk_product_command = f'./mkprodct.csh'
-        make_flag = _run_command(mk_product_command)
+        # > "{logs_path}/cspice_build_release.log" 2>&1'  # TODO remove unused log line
+        mk_product_command = f'./mkprodct.csh > "{logs_path}/cspice_build_release.log" 2>&1'
+        make_flag = u.run_command(mk_product_command)
 
         if make_flag != 0:
             raise RuntimeError(
