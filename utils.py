@@ -9,14 +9,14 @@ from enum import Enum
 from pathlib import Path
 
 
-def run_command(command: str, capture_output: bool = False, check: bool = False, stdin: subprocess._FILE = None,
+def run_command(command: str, capture_output: bool = False, check: bool = False, shell: bool = True, stdin: subprocess._FILE = None,
                 stdout: subprocess._FILE = None, stderr: subprocess._FILE = None, text: bool = False,
                 debug: bool = False) -> subprocess.CompletedProcess:
     """Runs a shell command and returns its `subprocess.CompletedProcess`."""
     if debug:
         print(f'Running command "{command}" in "{os.getcwd()}"')
     process: subprocess.CompletedProcess = subprocess.run(
-        command, capture_output=capture_output, check=check, shell=True, stdout=stdout, stderr=stderr, text=text)
+        command, capture_output=capture_output, check=check, shell=shell, stdout=stdout, stderr=stderr, text=text)
     return process
 
 
