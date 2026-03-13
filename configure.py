@@ -48,7 +48,7 @@ def setup_windows():
             f'Visual Studio version not recognised - {vs_version}.')
 
     vs_env_command = f'\"{syscall}\" {vs_arch} & set > vsEnvironment.txt'
-    os.system(vs_env_command)
+    u.run_command(vs_env_command)
 
     # Now parse the VC environment
     with open('vsEnvironment.txt', 'r') as f:
@@ -155,9 +155,9 @@ def download_depends():
             cspice_url = (f'https://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/'
                           f'{cspice_type}_{cspice_bit}bit/packages/cspice.tar.Z')
             download_file(cspice_url, 'cspice.tar.Z')
-            os.system('gzip -d cspice.tar.Z')
-            os.system('tar -xf cspice.tar')
-            os.system(f'mv cspice {cspice_dir}')
+            u.run_command('gzip -d cspice.tar.Z')
+            u.run_command('tar -xf cspice.tar')
+            u.run_command(f'mv cspice {cspice_dir}')
             u.rm(Path('cspice.tar'))
 
         download_complete('CSPICE')
@@ -204,7 +204,7 @@ def download_depends():
             swig_url = f'https://downloads.sourceforge.net/project/swig/swig/swig-4.2.0/swig-4.2.0.tar.gz'
             download_file(swig_url, str(save_name))
             u.extract(save_name)
-            os.system(f'mv swig-{swig_version} swig')
+            u.run_command(f'mv swig-{swig_version} swig')
             u.rm(swig_path / save_name)
 
             download_complete('SWIG')
@@ -254,9 +254,9 @@ def download_depends():
             # Download and extract AdoptOpenJDK for Mac/Linux
             download_file(f'{java_url}', 'jdk.tar.gz')
             # TODO use extract()
-            os.system('gzip -d jdk.tar.gz')
-            os.system('tar -xf jdk.tar')
-            os.system(f'mv jdk-{java_full_version} jdk')
+            u.run_command('gzip -d jdk.tar.gz')
+            u.run_command('tar -xf jdk.tar')
+            u.run_command(f'mv jdk-{java_full_version} jdk')
             u.rm(Path('jdk.tar'))
 
         download_complete('Java')
@@ -327,18 +327,18 @@ def build_xerces():
         os.makedirs(f'{xerces_path}/build/windows', exist_ok=True)
         os.chdir(f'{xerces_path}/build/windows')
         print('Setting up CMake...')
-        os.system(
+        u.run_command(
             f'cmake -G "Visual Studio {vs_major_version} {str(vs_version)}" -DBUILD_SHARED_LIBS:BOOL=OFF '
             f'-Dtranscoder=windows -DCMAKE_INSTALL_PREFIX="{xerces_outdir}" "{xerces_path}" -Wno-dev > '
             f'"{xerces_logs_path}\\xerces_cmake.log" 2>&1')
 
         print('-- Compiling debug Xerces. This could take a while...')
-        os.system(f'cmake --build . --config Debug --target install > \
+        u.run_command(f'cmake --build . --config Debug --target install > \
                     "{xerces_logs_path}\\xerces_build_debug.log" 2>&1')
 
         print('-- Compiling release Xerces. This could take a while...')
-        os.system(f'cmake --build . --config Release --target install > '
-                  f'"{xerces_logs_path}\\xerces_build_release.log" 2>&1')
+        u.run_command(f'cmake --build . --config Release --target install > '
+                      f'"{xerces_logs_path}\\xerces_build_release.log" 2>&1')
 
         return
 
@@ -375,8 +375,8 @@ def build_xerces():
     #     # For users who compile GMAT on multiple platforms side-by-side.
     #     # Running Windows configure.bat causes Mac/Linux configure scripts
     #     # to have missing permissions.
-    #     os.system('chmod u+x ../configure')
-    #     os.system('chmod u+x ../config/*')
+    #     u.run_command('chmod u+x ../configure')
+    #     u.run_command('chmod u+x ../config/*')
     #
     #     # Xerces needs flags on OSX
     #     macos_flags = '' if platform != Platform.macOS else \
@@ -392,14 +392,14 @@ def build_xerces():
     #     debug_configure_command = (f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" '
     #                                f'CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" > '
     #                                f'"{xerces_logs_path}/xerces_configure_debug.log" 2>&1')
-    #     os.system(debug_configure_command)
+    #     u.run_command(debug_configure_command)
     #
     #     make_depend('xerces', 'build_debug')
     #     make_depend('xerces', 'install_debug')
     #
     #     os.rename(f'{xerces_install_path}/lib/libxerces-c.a',
     #               f'{xerces_install_path}/lib/libxerces-cd.a')
-    #     os.system('make clean > /dev/null 2>&1')
+    #     u.run_command('make clean > /dev/null 2>&1')
     #
     #     print(
     #         f'Configuring Xerces {xerces_version} release library. This could take a while...')
@@ -407,13 +407,13 @@ def build_xerces():
     #     release_configure_command = f'../configure {common_xerces_flags} CFLAGS="{common_c_flags}" \
     #                             CXXFLAGS="{common_c_flags}" --prefix="{xerces_install_path}" \
     #                             > "{xerces_logs_path}/xerces_configure_release.log" 2>&1'
-    #     os.system(release_configure_command)
+    #     u.run_command(release_configure_command)
     #
     #     make_depend('xerces', 'build_release')
     #     make_depend('xerces', 'install_release')
     #
     #     os.chdir('..')
-    #     os.system(f'rm -Rf {xerces_build_path}')
+    #     u.run_command(f'rm -Rf {xerces_build_path}')
 
     # Make build and install directories
     os.makedirs(xerces_build_path, exist_ok=True)
@@ -528,10 +528,10 @@ def build_wxwidgets():
                     f' > "{logs_path}\\wxWidgets_build_{build_type}.log" 2>&1')
 
         print('-- Compiling debug wxWidgets. This could take a while...')
-        os.system(wxwidgets_build_command('debug'))
+        u.run_command(wxwidgets_build_command('debug'))
 
         print('-- Compiling release wxWidgets. This could take a while...')
-        os.system(wxwidgets_build_command('release'))
+        u.run_command(wxwidgets_build_command('release'))
 
         os.chdir(f'{wx_path}/lib')
 
@@ -594,7 +594,7 @@ def build_wxwidgets():
             # See [GMT-5384] and http://goharsha.com/blog/compiling-wxwidgets-3-0-2-mac-os-x-yosemite/
             osx_ver = mac_plat.mac_ver()[0]
             if wx_version == '3.0.2' and osx_ver > '10.10.0':  # TODO update wx_version if it's changed globally
-                os.system(
+                u.run_command(
                     f'sed -i.bk "s/WebKit.h/WebKitLegacy.h/" "{wx_path}/src/osx/webview_webkit.mm"')
 
             # wxWidgets needs these flags on OSX
@@ -657,13 +657,13 @@ def build_cspice():
         def compile_cspice(build_type):
             print(
                 f'-- Compiling {build_type} CSPICE. This could take a while...')
-            os.system(f'cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS'
-                      f' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
-                      f' "{logs_path}\\cspice_build_{build_type}.log" 2>&1')
-            os.system(f'link -lib /out:..\\..\\lib\\cspiced.lib *.obj >> '
-                      f'"{logs_path}\\cspice_build_{build_type}.log" 2>&1')
+            u.run_command(f'cl /c /DEBUG /Z7 /MP -D_COMPLEX_DEFINED -DMSDOS'
+                          f' -DOMIT_BLANK_CC -DNON_ANSI_STDIO -DUIOLEN_int *.c >'
+                          f' "{logs_path}\\cspice_build_{build_type}.log" 2>&1')
+            u.run_command(f'link -lib /out:..\\..\\lib\\cspiced.lib *.obj >> '
+                          f'"{logs_path}\\cspice_build_{build_type}.log" 2>&1')
 
-            os.system('del *.obj')
+            u.run_command('del *.obj')
 
         compile_cspice('debug')
         compile_cspice('release')
@@ -680,7 +680,7 @@ def build_cspice():
         # Windows would have returned or thrown error so below is macOS/Linux specific
         spice_path = f'{cspice_path}/{cspice_dir}'
         tk_compile_arch = f'-m{cspice_bit}'
-        os.system(f'export TKCOMPILEARCH="{tk_compile_arch}"')
+        u.run_command(f'export TKCOMPILEARCH="{tk_compile_arch}"')
 
         flags = '' if platform != Platform.macOS else (f'-mmacosx-version-min={osx_min_version} '
                                                        f'-Wno-error=implicit-function-declaration --sysroot={osx_sdk}')
@@ -697,11 +697,11 @@ def build_cspice():
         print('Compiling CSPICE debug library. This could take a while...')
         debug_tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
         os.environ['TKCOMPILEOPTIONS'] = debug_tk_compile_options
-        make_flag = os.system(
+        make_flag = u.run_command(
             f'./mkprodct.csh > "{logs_path}/cspice_build_debug.log" 2>&1')
 
         if make_flag == 0:
-            os.system('mv ../../lib/cspice.a ../../lib/cspiced.a')
+            u.run_command('mv ../../lib/cspice.a ../../lib/cspiced.a')
         else:
             print('CSPICE debug build failed. Fix errors and try again.')
 
@@ -731,10 +731,6 @@ def build_swig():
     else:
         print('\n********** Configuring SWIG **********')
 
-        # Out-of-source SWIG build/install locations
-        swig_build_path: Path = swig_dir / f'{swig_platform_name}-build'
-        swig_install_path: Path = swig_dir / f'{swig_platform_name}-install'
-
         # Find a test file to check if SWIG has already been installed
         swig_test_file: Path = swig_install_path / 'bin/swig'
 
@@ -754,12 +750,13 @@ def build_swig():
         # For users who compile GMAT on multiple platforms side-by-side.
         # Running Windows configure.bat causes Mac/Linux configure scripts
         # to have missing permissions.
-        os.system('chmod u+x ../configure')
+        # TODO remove debug=True for all instances of u.run_command() in build_swig()
+        u.run_command('chmod u+x ../configure', debug=True)
 
         print(
             f'Configuring SWIG {swig_version} tool. This could take a while...')
-        os.system(f'../configure --prefix="{swig_install_path}" > \
-                    "{logs_path}/swig_configure.log" 2>&1')
+        u.run_command(f'../configure --prefix="{swig_install_path}" > \
+                    "{logs_path}/swig_configure.log" 2>&1', debug=True)
 
         make_depend('SWIG', 'build')
         make_depend('SWIG', 'install')
@@ -853,6 +850,10 @@ if __name__ == '__main__':
             wx_platform_name = 'gtk'
             swig_platform_name = 'linux'
             wx_ext = 'so'
+
+    # Out-of-source SWIG build/install locations
+    swig_build_path: Path = swig_dir / f'{swig_platform_name}-build'
+    swig_install_path: Path = swig_dir / f'{swig_platform_name}-install'
 
     # PyCharm mistakenly thinks PLATFORM_Name can be undefined.
     # noinspection PyUnboundLocalVariable
