@@ -152,7 +152,7 @@ def rm(item: Path, debug: bool = False) -> None:
 
     # # FIXME below is not working - files/folders are not deleted.
     if item.is_dir():
-        shutil.rmtree(str(item.name))
+        shutil.rmtree(str(item))
     elif item.is_file():
         os.remove(item)
     else:
