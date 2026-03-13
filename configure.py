@@ -669,10 +669,7 @@ def build_swig():
         os.makedirs(swig_build_path, exist_ok=True)
         os.chdir(swig_build_path)
 
-        # [GMT-6892] Build static PCRE using SWIG-provided build script
-        os.rename(f'../{pcre_filename}', f'./{pcre_filename}')
-        os.system(
-            f'../Tools/pcre-build.sh > "{logs_path}/pcre_build.log" 2>&1')
+        build_pcre()  # Build PCRE dependency.
 
         # For users who compile GMAT on multiple platforms side-by-side.
         # Running Windows configure.bat causes Mac/Linux configure scripts
@@ -692,19 +689,13 @@ def build_swig():
         # u.rm(swig_build_path)
 
 
-def _run_command(command: str, log: Path | None = None) -> int:
-    if log:
-        with open(log, 'wb') as f:
-            p = subprocess.run(command.split(' '),
-                               stdout=f, stderr=f,  # check=True, text=True,
-                               shell=True)
-            return p.returncode
-
-    else:
-        return subprocess.run(command.split(' '),
-                              capture_output=True,
-                              # check=True, text=True,
-                              shell=True).returncode
+def build_pcre():
+    """Builds PCRE dependency. Only required on Linux and macOS."""
+    # [GMT-6892] Build static PCRE using SWIG-provided build script
+    os.rename(f'../{pcre_filename}', f'./{pcre_filename}')
+    u.run_command(
+        # TODO remove debug option
+        f'../Tools/pcre-build.sh > "{logs_path}/pcre_build.log" 2>&1', debug=True)
 
 
 if __name__ == '__main__':
