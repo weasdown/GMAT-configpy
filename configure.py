@@ -624,7 +624,7 @@ def build_cspice():
         def build(configuration: str, debug: bool = False) -> subprocess.CompletedProcess:
             """Builds CSPICE."""
             if configuration == 'debug':
-               # Compile debug CSPICE with integer uiolen [GMT-5044]
+                # Compile debug CSPICE with integer uiolen [GMT-5044]
                 print('Compiling CSPICE debug library. This could take a while...')
                 tk_compile_options = f'{tk_compile_arch} -c -ansi{flags} -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
             elif configuration == 'release':
@@ -638,7 +638,7 @@ def build_cspice():
             os.environ['TKCOMPILEOPTIONS'] = tk_compile_options
             if debug:
                 print(
-                    f'TKCOMPILEOPTIONS environment variable: "{os.environ['TKCOMPILEOPTIONS']}"')
+                    f'TKCOMPILEOPTIONS environment variable: "{os.environ["TKCOMPILEOPTIONS"]}"')
 
             # > "{logs_path}/cspice_build_{configuration}.log" 2>&1' # TODO reinstate/remove log line
             mk_product_command = f'./mkprodct.csh'
