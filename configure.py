@@ -620,30 +620,43 @@ def build_cspice():
 
         os.chdir(f'{spice_path}/src/cspice')
 
-        # Compile debug CSPICE with integer uiolen [GMT-5044]
-        print('Compiling CSPICE debug library. This could take a while...')
-        debug_tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
-        os.environ['TKCOMPILEOPTIONS'] = debug_tk_compile_options
-        make_flag = u.run_command(
-            f'./mkprodct.csh > "{logs_path}/cspice_build_debug.log" 2>&1')
+        def build(configuration: str) -> subprocess.CompletedProcess:
+            """Builds CSPICE."""
+            if configuration == 'debug':
+               # Compile debug CSPICE with integer uiolen [GMT-5044]
+                print('Compiling CSPICE debug library. This could take a while...')
+                tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
+            elif configuration == 'release':
+                # Compile release CSPICE with integer uiolen [GMT-5044]
+                print('Compiling CSPICE release library. This could take a while...')
+                tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
 
-        if make_flag == 0:
-            u.run_command('mv ../../lib/cspice.a ../../lib/cspiced.a')
-        else:
-            raise RuntimeError(
-                'CSPICE debug build failed. Fix errors and try again.')
+            else:
+                raise AttributeError(
+                    f'Configuration "{configuration}" is not recognised for CSPICE. Please use "debug" or "release".')
 
-        # Compile release CSPICE with integer uiolen [GMT-5044]
-        print('Compiling CSPICE release library. This could take a while...')
-        release_tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
-        os.environ['TKCOMPILEOPTIONS'] = release_tk_compile_options
-        # > "{logs_path}/cspice_build_release.log" 2>&1'  # TODO remove unused log line
-        mk_product_command = f'./mkprodct.csh > "{logs_path}/cspice_build_release.log" 2>&1'
-        make_flag = u.run_command(mk_product_command)
+            os.environ['TKCOMPILEOPTIONS'] = tk_compile_options
 
-        if make_flag != 0:
-            raise RuntimeError(
-                'CSPICE release build failed. Fix errors and try again.')
+            # > "{logs_path}/cspice_build_{configuration}.log" 2>&1' # TODO reinstate/remove log line
+            mk_product_command = f'./mkprodct.csh'
+            # FIXME remove debug option
+            p: subprocess.CompletedProcess = u.run_command(
+                mk_product_command, debug=True, capture_output=True, text=True)
+
+            # Successful build.
+            if p.returncode == 0:
+                if configuration == 'debug':
+                    u.run_command('mv ../../lib/cspice.a ../../lib/cspiced.a')
+
+                return p
+            # Build failed.
+            else:
+                raise RuntimeError(
+                    f'CSPICE {configuration} build failed. Fix errors and try again. Error: "{p.stderr}"')
+
+        build('debug')  # Build debug configuration of CSPICE library.
+
+        build('release')  # Build release configuration of CSPICE library.
 
     print('-- CSPICE build complete!\n')
     return None
