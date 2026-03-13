@@ -43,7 +43,7 @@ class _Directories:
     def gmat_git(self) -> Path:
         return self._gmat_git
 
-    def _set_variables(self) -> None:
+    def set_variables(self) -> None:
         """Sets environment variables for the directories."""
         os.environ['GMAT_GIT'] = str(self.gmat_git)
         os.environ['depends'] = str(self.depends)
@@ -162,7 +162,7 @@ def rm(item: Path, debug: bool = False) -> None:
 
 def set_env_variables() -> None:
     """Sets convenience environment variables for GMAT configuring."""
-    directories._set_variables()
+    directories.set_variables()
     print('All environment variables set.\n')
 
 
