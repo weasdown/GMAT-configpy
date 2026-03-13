@@ -155,6 +155,7 @@ def download_depends():
             cspice_url = (f'https://naif.jpl.nasa.gov/pub/naif/misc/toolkit_{cspice_version}/C/'
                           f'{cspice_type}_{cspice_bit}bit/packages/cspice.tar.Z')
             download_file(cspice_url, 'cspice.tar.Z')
+            # TODO convert to use u.extract()
             u.run_command('gzip -d cspice.tar.Z')
             u.run_command('tar -xf cspice.tar')
             u.run_command(f'mv cspice {cspice_dir}')
