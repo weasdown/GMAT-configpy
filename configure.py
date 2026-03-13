@@ -823,7 +823,7 @@ if __name__ == '__main__':
     download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
 
     # Build the dependencies using CMake
-    print('\n*** Building GMAT dependencies ***\n')
+    print('\n\n*** Building GMAT dependencies ***\n')
     build_xerces()
     build_cspice()
     build_swig()
