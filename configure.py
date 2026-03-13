@@ -630,7 +630,8 @@ def build_cspice():
         if make_flag == 0:
             u.run_command('mv ../../lib/cspice.a ../../lib/cspiced.a')
         else:
-            print('CSPICE debug build failed. Fix errors and try again.')
+            raise RuntimeError(
+                'CSPICE debug build failed. Fix errors and try again.')
 
         # Compile release CSPICE with integer uiolen [GMT-5044]
         print('Compiling CSPICE release library. This could take a while...')
