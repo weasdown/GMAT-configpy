@@ -609,7 +609,7 @@ def build_cspice():
         tk_compile_arch = f'-m{cspice_bit}'
         u.run_command(f'export TKCOMPILEARCH="{tk_compile_arch}"')
 
-        flags = '' if platform != Platform.macOS else (f'-mmacosx-version-min={osx_min_version} '
+        flags = '' if platform != Platform.macOS else (f' -mmacosx-version-min={osx_min_version} '
                                                        f'-Wno-error=implicit-function-declaration --sysroot={osx_sdk}')
 
         cspice_test_file = f'{spice_path}/lib/cspiced.a'
@@ -625,12 +625,11 @@ def build_cspice():
             if configuration == 'debug':
                # Compile debug CSPICE with integer uiolen [GMT-5044]
                 print('Compiling CSPICE debug library. This could take a while...')
-                tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
+                tk_compile_options = f'{tk_compile_arch} -c -ansi{flags} -g -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
             elif configuration == 'release':
                 # Compile release CSPICE with integer uiolen [GMT-5044]
                 print('Compiling CSPICE release library. This could take a while...')
-                tk_compile_options = f'{tk_compile_arch} -c -ansi {flags} -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
-
+                tk_compile_options = f'{tk_compile_arch} -c -ansi{flags} -O2 -fPIC -DNON_UNIX_STDIO -DUIOLEN_int'
             else:
                 raise AttributeError(
                     f'Configuration "{configuration}" is not recognised for CSPICE. Please use "debug" or "release".')
