@@ -245,8 +245,8 @@ def download_depends():
             # Download and extract AdoptOpenJDK for Windows
             download_file(java_url, str(downloaded_file))
 
-            # Extract the downloaded zip to a folder with the full version number as its name
-            u.extract(downloaded_file, f'jdk-{java_full_version}')
+            # Extract the downloaded zip to a folder with the full version number as its name.
+            u.extract(downloaded_file)
             os.rename(f'jdk-{java_full_version}', 'jdk')
             u.rm(downloaded_file)
 
