@@ -22,13 +22,17 @@ def run_command(command: str, capture_output: bool = False, check: bool = False,
 
 
 class _Directories:
-    def __init__(self) -> None:
-        """Defines useful directories."""
-        _user = run_command('whoami', capture_output=True,
-                            text=True).stdout.rstrip()
+    def __init__(self, gmat: Path, gmat_git: Path) -> None:
+        """
+        Defines useful directories.
 
-        self._gmat: Path = Path(f'/home/{_user}/dev/non-OH/gmat/GMAT-R2025a')
-        self._gmat_git: Path = Path(f'/home/{_user}/dev/non-OH/gmat/gmat-git')
+        :param gmat: path to the folder that contains the GMAT installation.
+        :type gmat: pathlib.Path
+        :param gmat_git: path to the folder that contains the ``gmat-git`` folder.
+        :type gmat_git: pathlib.Path
+        """
+        self._gmat: Path = gmat
+        self._gmat_git: Path = gmat_git
         self._depends: Path = (self._gmat_git / 'depends')
 
     @property
@@ -50,7 +54,7 @@ class _Directories:
         os.environ['GMAT'] = str(self.gmat)
 
 
-directories: _Directories = _Directories()
+directories: _Directories = _Directories(Path(os.environ['GMAT']), Path(os.environ['GMAT_GIT']))
 
 
 class Platform(Enum):
