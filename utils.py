@@ -120,8 +120,8 @@ def extract(archive: Path, output_path: str = '') -> None:
 
     if extension == '.zip':
         if platform == Platform.Windows:
-            seven_zip_exe = f'{directories.depends}/bin/7za/7za.exe'
-            output_path_arg: str = '' if output_path is None else f'-o "./{output_path}" '
+            seven_zip_exe = str(Path(f'{directories.depends}/bin/7za/7za.exe').resolve())
+            output_path_arg: str = '' if not output_path else f'-o "./{output_path}" '
             run_command(
                 f'{seven_zip_exe} x {archive} -r {output_path_arg}> nul')
         else:
