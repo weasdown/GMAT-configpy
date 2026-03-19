@@ -472,6 +472,7 @@ def build_wxwidgets():
         os.chdir(f'{wx_path}/lib')
 
         if not os.path.exists(dll_folder_final):
+            # FIXME "FileNotFoundError: [WinError 2] The system cannot find the file specified: 'vc141_x64_dll' -> 'vc141dll'"
             os.rename(dll_folder_initial, dll_folder_final)
 
         # Once the build has finished, some DLLs need to be copied into gmat/application/bin and gmat/application/debug
@@ -721,6 +722,9 @@ def build_pcre():
 
 
 if __name__ == '__main__':
+    print(f'GMAT env variable: {os.environ["GMAT"]}')
+    print(f'GMAT_GIT env variable: {os.environ["GMAT_GIT"]}')
+
     print('\n*** Configuring GMAT dependencies ***\n')
 
     set_env_variables()
@@ -822,6 +826,7 @@ if __name__ == '__main__':
 
     download_depends()  # download GMAT dependencies (Xerces, wxWidgets, CSPICE, SWIG)
 
+    # FIXME reinstate builds
     # Build the dependencies using CMake
     print('\n\n*** Building GMAT dependencies ***\n')
     build_xerces()
