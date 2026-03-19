@@ -459,15 +459,15 @@ def build_wxwidgets():
             raise e
 
         def wxwidgets_build_command(build_type):
-            return (f'nmake -f makefile.vc OFFICIAL_BUILD=1 COMPILER_VERSION='
-                    f'{vc_major_version}{vc_minor_version} {wx_tgt_cpu} SHARED=1 BUILD={build_type}'
-                    f' > "{logs_path}\\wxWidgets_build_{build_type}.log" 2>&1')
+            return u.run_command(f'nmake -f makefile.vc OFFICIAL_BUILD=1 COMPILER_VERSION='
+                                 f'{vc_major_version}{vc_minor_version} {wx_tgt_cpu} SHARED=1 BUILD={build_type}'
+                                 f' > "{logs_path}\\wxWidgets_build_{build_type}.log" 2>&1', capture_output=True)
 
         print('-- Compiling debug wxWidgets. This could take a while...')
-        u.run_command(wxwidgets_build_command('debug'), capture_output=True)
+        wxwidgets_build_command('debug')
 
         print('-- Compiling release wxWidgets. This could take a while...')
-        u.run_command(wxwidgets_build_command('release'), capture_output=True)
+        wxwidgets_build_command('release')
 
         os.chdir(f'{wx_path}/lib')
 
