@@ -676,15 +676,14 @@ def build_cspice():
 
 
 def build_swig():
+    print('\n********** Configuring SWIG **********')
     # Windows is pre-built
     if platform == Platform.Windows:
-        print('\n-- SWIG for Windows comes pre-built')
+        print('-- SWIG for Windows comes pre-built')
         return
 
     # macOS or Linux build
     else:
-        print('\n********** Configuring SWIG **********')
-
         # Find a test file to check if SWIG has already been installed
         swig_test_file: Path = swig_install_path / 'bin/swig'
 
