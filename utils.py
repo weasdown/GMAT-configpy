@@ -87,8 +87,14 @@ def download_file(url: str, save_name: str = '', debug: bool = False) -> int:
             f'Downloading from "{url}" and saving as "{os.getcwd()}/{save_name}".')
     # If no save_name was provided, wget will use the end of the url by default.
     save_argument: str = '' if not save_name else f'-O {save_name} '
-    return run_command(
-        f'wget -q --show-progress {save_argument}{url}', check=True).returncode
+
+    if Platform.current() == Platform.Windows:
+        return run_command(f'curl -L {url} > {save_name}', capture_output=True, check=True).returncode
+
+    # Linux or macOS
+    else:
+        return run_command(
+            f'wget -q --show-progress {save_argument}{url}', check=True).returncode
 
 
 def extract(archive: Path, output_path: str = '') -> None:
