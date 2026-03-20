@@ -432,15 +432,16 @@ def build_wxwidgets():
     wx_test_file: Path = dll_folder_final_path if platform == Platform.Windows \
         else wx_install_path / f'lib/libwx_baseu-{wx_major}.{wx_minor}.{wx_ext}'
 
+    # Build wxWidgets if the test file doesn't already exist
+    if os.path.exists(wx_test_file):
+        print('-- wxWidgets already configured')
+        return
+
     # Windows-specific build
     if platform == Platform.Windows:
         if not os.path.exists(wx_path):
             raise FileNotFoundError(
                 wx_path, f'Could not find folder "{wx_path}" to build wxWidgets.')
-
-        if os.path.exists(wx_test_file):
-            print('-- wxWidgets already configured')
-            return
 
         os.chdir(wx_path)
         try:
@@ -519,7 +520,6 @@ def build_wxwidgets():
         rm -rf gtk-build
         ```
         """
-        # Build wxWidgets if the test file doesn't already exist
         # Note that according to
         #   http://docs.wxwidgets.org/3.0/overview_debugging.html
         # debugging features "are always available by default", so
@@ -527,10 +527,6 @@ def build_wxwidgets():
         # IF a debug version is required in the future, then this
         # if/else block should be repeated with the --enable-debug flag
         # added to Mac & linux versions of the wx ./configure command
-        if os.path.exists(wx_test_file):
-            print(f'wxWidgets {wx_version} already configured')
-            return
-
         os.makedirs(wx_build_path, exist_ok=True)
         os.makedirs(wx_install_path, exist_ok=True)
         os.chdir(wx_build_path)
