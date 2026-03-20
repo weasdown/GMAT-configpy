@@ -459,6 +459,9 @@ def build_wxwidgets():
             raise e
 
         def wxwidgets_build_command(build_type):
+            if build_type not in ['debug', 'release']:
+                raise AttributeError(
+                    f'Configuration "{build_type}" is not recognised for wxWidgets. Please use "debug" or "release".')
             return u.run_command(f'nmake -f makefile.vc OFFICIAL_BUILD=1 COMPILER_VERSION='
                                  f'{vc_major_version}{vc_minor_version} {wx_tgt_cpu} SHARED=1 BUILD={build_type}'
                                  f' > "{logs_path}\\wxWidgets_build_{build_type}.log" 2>&1', capture_output=True)
