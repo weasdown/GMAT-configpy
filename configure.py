@@ -497,6 +497,7 @@ def build_wxwidgets():
 
         # DLL copying is only required for wxWidgets version 3.0.4 (see GMT-7534 https://gmat.atlassian.net/browse/GMT-7534).
         if wx_version == '3.0.4':
+            print(f'-- Copying required DLLs for wxWidgets {wx_version}...')
             copy_dlls(debug=False)
             copy_dlls(debug=True)
 
