@@ -498,6 +498,8 @@ def build_wxwidgets():
             print(f'-- Copying {"non-" if not debug else ""}debug DLLs')
             for dll in required_dlls:
                 source_file: Path = dll_source / dll
+                if not (source_file.is_file() and source_file.exists()):
+                    raise FileNotFoundError(f'Required DLL {dll} does not exist or is not a file.')
                 destination_file: Path = dll_destination / dll
                 shutil.copyfile(source_file, destination_file)
 
