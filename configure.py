@@ -414,22 +414,6 @@ def build_xerces():
 
 
 def build_wxwidgets():
-    """
-    Change directory to `wx_path`, then:
-
-    ```console
-
-    mkdir gtk-build
-    mkdir gtk-install
-    cd gtk-build
-    ../configure  --enable-unicode --with-opengl --prefix="/home/will/dev/non-OH/GMAT/GMAT-src-R2025a/depends/
-    wxWidgets/wxWidgets-3.0.4/gtk-install"
-    make -j12
-    make install -j12
-    cd ..
-    rm -rf gtk-build
-    ```
-    """
     print(f'\n********** Configuring wxWidgets {wx_version} **********')
 
     wx_major, wx_minor, _ = wx_version.split('.')
@@ -518,6 +502,22 @@ def build_wxwidgets():
 
     # macOS or Linux build
     else:
+        """
+        Change directory to `wx_path`, then:
+
+        ```console
+
+        mkdir gtk-build
+        mkdir gtk-install
+        cd gtk-build
+        ../configure  --enable-unicode --with-opengl --prefix="/home/will/dev/non-OH/GMAT/GMAT-src-R2025a/depends/
+        wxWidgets/wxWidgets-3.0.4/gtk-install"
+        make -j12
+        make install -j12
+        cd ..
+        rm -rf gtk-build
+        ```
+        """
         # Build wxWidgets if the test file doesn't already exist
         # Note that according to
         #   http://docs.wxwidgets.org/3.0/overview_debugging.html
