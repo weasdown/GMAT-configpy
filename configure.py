@@ -432,20 +432,29 @@ def build_wxwidgets():
     """
     print(f'\n********** Configuring wxWidgets {wx_version} **********')
 
+    wx_major, wx_minor, _ = wx_version.split('.')
+
+    # Set build path based on version
+    wx_path: Path = wxWidgets_path / f'wxWidgets-{wx_version}'
+
+    wx_build_path: Path = wx_path / f'{wx_platform_name}-build'
+    wx_install_path: Path = wx_path / f'{wx_platform_name}-install'
+
+    # Windows-specific DLL folder
+    dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'  # vc141_x64_dll
+    dll_folder_final: str = dll_folder_initial.replace(wx_type, '')  # vc141dll
+    dll_folder_final_path: Path = wx_path / 'lib' / dll_folder_final  # .../depends/wxWidgets/wxWidgets-[version]/lib/vc141dll
+
+    wx_test_file: Path = dll_folder_final_path if platform == Platform.Windows \
+        else wx_install_path / f'lib/libwx_baseu-{wx_major}.{wx_minor}.{wx_ext}'
+
     # Windows-specific build
     if platform == Platform.Windows:
-        wx_path: Path = wxWidgets_path / wx_version_folder
-
         if not os.path.exists(wx_path):
             raise FileNotFoundError(
                 wx_path, f'Could not find folder "{wx_path}" to build wxWidgets.')
 
-        # vc141_x64_dll
-        dll_folder_initial: str = f'vc{vc_major_version}{vc_minor_version}{wx_type}dll'
-        dll_folder_final: str = dll_folder_initial.replace(
-            wx_type, '')  # vc141dll
-
-        if os.path.exists(f'{wx_path}/lib/{dll_folder_final}'):
+        if os.path.exists(wx_test_file):
             print('-- wxWidgets already configured')
             return
 
@@ -474,7 +483,7 @@ def build_wxwidgets():
 
         os.chdir(wx_path / 'lib')
 
-        if not os.path.exists(dll_folder_final):
+        if not dll_folder_final_path.exists():
             os.rename(dll_folder_initial, dll_folder_final)
 
         # If using wxWidgets 3.0.4, once the build has finished, some DLLs need to be copied into gmat/application/bin
@@ -484,7 +493,6 @@ def build_wxwidgets():
             dll_source: Path = wx_path / f'lib/{dll_folder_final}'
             dll_destination: Path = gmat_path / f'application/{"debug" if debug else "bin"}'
 
-            wx_major, wx_minor, _ = wx_version.split('.')
             # The characters at the start of each required DLL's name.
             dll_name_start: str = f'wxbase{wx_major}{wx_minor}u'
 
@@ -510,13 +518,6 @@ def build_wxwidgets():
 
     # macOS or Linux build
     else:
-        # Set build path based on version
-        wx_path: Path = wxWidgets_path / f'wxWidgets-{wx_version}'
-
-        wx_build_path: Path = wx_path / f'{wx_platform_name}-build'
-        wx_install_path: Path = wx_path / f'{wx_platform_name}-install'
-        wx_test_file: Path = wx_install_path / f'lib/libwx_baseu-3.0.{wx_ext}'
-
         # Build wxWidgets if the test file doesn't already exist
         # Note that according to
         #   http://docs.wxwidgets.org/3.0/overview_debugging.html
@@ -749,7 +750,6 @@ if __name__ == '__main__':
     java_update = '10'
     # GMAT before R2025a(?) uses wxWidgets 3.0.4.
     wx_version: str = '3.2.6'
-    wx_version_folder: str = f'wxWidgets-{wx_version}'
     xerces_version: str = '3.2.2'
     vs_version: int = 2022
     vs_major_version: str = '17'
@@ -787,6 +787,8 @@ if __name__ == '__main__':
             # noinspection PyRedeclaration
             swig_dir: Path = swig_path / 'swigwin'
             swig_platform_name = 'windows'
+            wx_platform_name = 'windows'
+            wx_ext = 'dll'
             setup_windows()
 
         case 'darwin':
