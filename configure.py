@@ -483,12 +483,17 @@ def build_wxwidgets():
         def copy_dlls(debug: bool = False):
             dll_source: str = f'{wx_path}/lib/{dll_folder_final}'
             dll_destination: str = f'{gmat_path}/application/{"debug" if debug else "bin"}'
+
+            wx_major, wx_minor, _ = wx_version.split('.')
+            # The characters at the start of each required DLL's name.
+            dll_name_start: str = f'wxbase{wx_major}{wx_minor}u'
+
             required_dlls: list[str] = [
-                f'wxbase30u{"d" if debug else ""}_vc{vc_major_version}{vc_minor_version}_x64.dll',
-                f'wxmsw30u{"d" if debug else ""}_core_vc{vc_major_version}{vc_minor_version}_x64.dll',
-                f'wxmsw30u{"d" if debug else ""}_adv_vc{vc_major_version}{vc_minor_version}_x64.dll',
-                f'wxmsw30u{"d" if debug else ""}_stc_vc{vc_major_version}{vc_minor_version}_x64.dll',
-                f'wxmsw30u{"d" if debug else ""}_gl_vc{vc_major_version}{vc_minor_version}_x64.dll']
+                f'{dll_name_start}{"d" if debug else ""}_vc{vc_major_version}{vc_minor_version}_x64.dll',
+                f'{dll_name_start}{"d" if debug else ""}_core_vc{vc_major_version}{vc_minor_version}_x64.dll',
+                f'{dll_name_start}{"d" if debug else ""}_adv_vc{vc_major_version}{vc_minor_version}_x64.dll',
+                f'{dll_name_start}{"d" if debug else ""}_stc_vc{vc_major_version}{vc_minor_version}_x64.dll',
+                f'{dll_name_start}{"d" if debug else ""}_gl_vc{vc_major_version}{vc_minor_version}_x64.dll']
 
             print(f'-- Copying {"non-" if not debug else ""}debug DLLs')
             for dll in required_dlls:
