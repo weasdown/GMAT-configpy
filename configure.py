@@ -735,9 +735,6 @@ def build_pcre():
 
 
 if __name__ == '__main__':
-    print(f'GMAT env variable: {os.environ["GMAT"]}')
-    print(f'GMAT_GIT env variable: {os.environ["GMAT_GIT"]}')
-
     print('\n*** Configuring GMAT dependencies ***\n')
 
     set_env_variables()
