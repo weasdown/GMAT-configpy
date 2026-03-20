@@ -478,8 +478,9 @@ def build_wxwidgets():
             # FIXME "FileNotFoundError: [WinError 2] The system cannot find the file specified: 'vc141_x64_dll' -> 'vc141dll'"
             os.rename(dll_folder_initial, dll_folder_final)
 
-        # Once the build has finished, some DLLs need to be copied into gmat/application/bin and gmat/application/debug
-        #  to enable the .exe to run once built. (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
+        # If using wxWidgets 3.0.4, once the build has finished, some DLLs need to be copied into gmat/application/bin
+        # and gmat/application/debug to enable the .exe to run once built.
+        # (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
         def copy_dlls(debug: bool = False):
             dll_source: Path = wx_path / f'lib/{dll_folder_final}'
             dll_destination: Path = gmat_path / f'application/{"debug" if debug else "bin"}'
@@ -503,8 +504,10 @@ def build_wxwidgets():
                 destination_file: Path = dll_destination / dll
                 shutil.copyfile(source_file, destination_file)
 
-        copy_dlls(debug=False)
-        copy_dlls(debug=True)
+        # DLL copying is only required for wxWidgets version 3.0.4 (see GMT-7534 https://gmat.atlassian.net/browse/GMT-7534).
+        if wx_version == '3.0.4':
+            copy_dlls(debug=False)
+            copy_dlls(debug=True)
 
     # macOS or Linux build
     else:
