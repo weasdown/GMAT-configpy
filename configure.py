@@ -481,8 +481,8 @@ def build_wxwidgets():
         # Once the build has finished, some DLLs need to be copied into gmat/application/bin and gmat/application/debug
         #  to enable the .exe to run once built. (See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534)
         def copy_dlls(debug: bool = False):
-            dll_source: str = f'{wx_path}/lib/{dll_folder_final}'
-            dll_destination: str = f'{gmat_path}/application/{"debug" if debug else "bin"}'
+            dll_source: Path = wx_path / f'lib/{dll_folder_final}'
+            dll_destination: Path = gmat_path / f'application/{"debug" if debug else "bin"}'
 
             wx_major, wx_minor, _ = wx_version.split('.')
             # The characters at the start of each required DLL's name.
@@ -497,8 +497,8 @@ def build_wxwidgets():
 
             print(f'-- Copying {"non-" if not debug else ""}debug DLLs')
             for dll in required_dlls:
-                source_file: str = f'{dll_source}/{dll}'
-                destination_file: str = f'{dll_destination}/{dll}'
+                source_file: Path = dll_source / dll
+                destination_file: Path = dll_destination / dll
                 shutil.copyfile(source_file, destination_file)
 
         copy_dlls(debug=False)
