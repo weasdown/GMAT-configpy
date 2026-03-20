@@ -469,7 +469,7 @@ def build_wxwidgets():
         print('-- Compiling release wxWidgets. This could take a while...')
         wxwidgets_build_command('release')
 
-        os.chdir(f'{wx_path}/lib')
+        os.chdir(wx_path / 'lib')
 
         if not os.path.exists(dll_folder_final):
             # FIXME "FileNotFoundError: [WinError 2] The system cannot find the file specified: 'vc141_x64_dll' -> 'vc141dll'"
