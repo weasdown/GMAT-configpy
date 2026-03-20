@@ -475,7 +475,6 @@ def build_wxwidgets():
         os.chdir(wx_path / 'lib')
 
         if not os.path.exists(dll_folder_final):
-            # FIXME "FileNotFoundError: [WinError 2] The system cannot find the file specified: 'vc141_x64_dll' -> 'vc141dll'"
             os.rename(dll_folder_initial, dll_folder_final)
 
         # If using wxWidgets 3.0.4, once the build has finished, some DLLs need to be copied into gmat/application/bin
