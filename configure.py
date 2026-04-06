@@ -429,11 +429,12 @@ def build_wxwidgets():
     dll_folder_final: str = dll_folder_initial.replace(wx_type, '')  # vc141dll
     dll_folder_final_path: Path = wx_path / 'lib' / dll_folder_final  # .../depends/wxWidgets/wxWidgets-[version]/lib/vc141dll
 
-    wx_test_file: Path = dll_folder_final_path if platform == Platform.Windows \
+    test_dll = 'wxmsw32u_gl_vc141_x64.dll'
+    wx_test_path: Path = wx_install_path / f'lib/{test_dll}' if platform == Platform.Windows \
         else wx_install_path / f'lib/libwx_baseu-{wx_major}.{wx_minor}.{wx_ext}'
 
     # Build wxWidgets if the test file doesn't already exist
-    if os.path.exists(wx_test_file):
+    if wx_test_path.exists():
         print('-- wxWidgets already configured')
         return
 
@@ -481,26 +482,35 @@ def build_wxwidgets():
             # The characters at the start of each required DLL's name.
             dll_name_start: str = f'wxbase{wx_major}{wx_minor}u'
 
-            required_dlls: list[str] = [
+            # Required DLLs for wxWidgets 3.0.4
+            required_dlls_304: list[str] = [
                 f'{dll_name_start}{"d" if debug else ""}_vc{vc_major_version}{vc_minor_version}_x64.dll',
                 f'{dll_name_start}{"d" if debug else ""}_core_vc{vc_major_version}{vc_minor_version}_x64.dll',
                 f'{dll_name_start}{"d" if debug else ""}_adv_vc{vc_major_version}{vc_minor_version}_x64.dll',
                 f'{dll_name_start}{"d" if debug else ""}_stc_vc{vc_major_version}{vc_minor_version}_x64.dll',
                 f'{dll_name_start}{"d" if debug else ""}_gl_vc{vc_major_version}{vc_minor_version}_x64.dll']
+            # Required DLLs for wxWidgets 3.2.6
+            required_dlls_326: list[str] = [f'wxbase{wx_major}{wx_minor}u_vc141_x64.dll',
+                                            f'wxmsw{wx_major}{wx_minor}u_core_vc141_x64.dll',
+                                            f'wxmsw{wx_major}{wx_minor}u_gl_vc141_x64.dll',
+                                            f'wxmsw{wx_major}{wx_minor}u_stc_vc141_x64.dll']
+
+            required_dlls: list[str] = required_dlls_304 if wx_version == '3.0.4' else required_dlls_326
 
             print(f'-- Copying {"non-" if not debug else ""}debug DLLs')
             for dll in required_dlls:
                 source_file: Path = dll_source / dll
+                if not source_file.exists():
+                    raise FileNotFoundError(f'Could not find required DLL {source_file} in {dll_source}.')
                 if not (source_file.is_file() and source_file.exists()):
                     raise FileNotFoundError(f'Required DLL {dll} does not exist or is not a file.')
                 destination_file: Path = dll_destination / dll
                 shutil.copyfile(source_file, destination_file)
 
-        # DLL copying is only required for wxWidgets version 3.0.4 (see GMT-7534 https://gmat.atlassian.net/browse/GMT-7534).
-        if wx_version == '3.0.4':
-            print(f'-- Copying required DLLs for wxWidgets {wx_version}...')
-            copy_dlls(debug=False)
-            copy_dlls(debug=True)
+        # See GMT-7534 https://gmat.atlassian.net/browse/GMT-7534.
+        print(f'-- Copying required DLLs for wxWidgets {wx_version}...')
+        copy_dlls(debug=False)
+        copy_dlls(debug=True)
 
     # macOS or Linux build
     else:
