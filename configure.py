@@ -631,7 +631,7 @@ def build_cspice():
         return
 
     if platform == Platform.Windows:
-        return cspice_win()
+        cspice_win()
 
     # macOS or Linux build
     else:
